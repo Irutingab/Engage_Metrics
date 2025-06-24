@@ -2,7 +2,9 @@ from dashboard import StudentDashboard
 
 def run():
     dashboard = StudentDashboard()
-    dashboard.start()
+    dashboard.run()
 
 if __name__ == "__main__":
     run()
+
+

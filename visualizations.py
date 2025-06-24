@@ -6,8 +6,7 @@ class Visualizations:
     
     @staticmethod
     def create_donut_chart(df, column, title, colors=None):
-        '''Creates a donut (pie) chart showing the distribution of values in 
-        a categorical column.'''
+
         value_counts = df[column].value_counts()
         
         if colors is None:
@@ -34,6 +33,7 @@ class Visualizations:
     
     @staticmethod
     def create_histogram_chart(df, column, title, colors=None, bins=None):
+        
         """Plots a histogram for numerical data or a bar chart for categorical data."""
         fig, ax = plt.subplots(figsize=(10, 6))
         
@@ -167,43 +167,78 @@ class Visualizations:
     
     @staticmethod
     def create_box_plot_scores_by_education(df):
-        """Create box plot showing exam score distribution by parental education level"""
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+        """Create clear donut charts showing score distributions by demographics"""
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
         
-        education_order = ['High School', 'College', 'Postgraduate']
-        education_data = [df[df['Parental_Education_Level'] == level]['Exam_Score'].values 
-                        for level in education_order if level in df['Parental_Education_Level'].values]
-        education_labels = [level for level in education_order if level in df['Parental_Education_Level'].values]
+        # Create score categories
+        df_temp = df.copy()
+        df_temp['Score_Category'] = pd.cut(df_temp['Exam_Score'], 
+                                         bins=[0, 60, 70, 80, 90, 100], 
+                                         labels=['Poor (0-60)', 'Fair (60-70)', 'Good (70-80)', 'Very Good (80-90)', 'Excellent (90-100)'])
         
-        if education_data:
-            box1 = ax1.boxplot(education_data, labels=education_labels, patch_artist=True)
-            colors1 = ["#3C14A3", "#0F0B97", "#1B053A"]
-            for patch, color in zip(box1['boxes'], colors1[:len(box1['boxes'])]):
-                patch.set_facecolor(color)
-                patch.set_alpha(0.7)
-            
-            ax1.set_title('Exam Score Distribution by Parental Education Level', fontweight='bold')
-            ax1.set_xlabel('Parental Education Level')
-            ax1.set_ylabel('Exam Score')
-            ax1.grid(True, alpha=0.3)
+        # Education Level - High School
+        hs_data = df_temp[df_temp['Parental_Education_Level'] == 'High School']['Score_Category'].value_counts()
+        colors_hs = ["#8B0000", "#FF4500", "#FFD700", "#32CD32", "#006400"]
         
-        income_order = ['Low', 'Medium', 'High']
-        income_data = [df[df['Family_Income'] == level]['Exam_Score'].values 
-                    for level in income_order if level in df['Family_Income'].values]
-        income_labels = [level for level in income_order if level in df['Family_Income'].values]
+        if not hs_data.empty:
+            wedges1, texts1, autotexts1 = ax1.pie(hs_data.values, labels=hs_data.index,
+                                                 colors=colors_hs[:len(hs_data)],
+                                                 autopct='%1.1f%%', startangle=90,
+                                                 wedgeprops=dict(width=0.6))
+            for autotext in autotexts1:
+                autotext.set_color('white')
+                autotext.set_fontweight('bold')
+                autotext.set_fontsize(10)
         
-        if income_data:
-            box2 = ax2.boxplot(income_data, labels=income_labels, patch_artist=True)
-            colors2 = ["#7A6BFF", "#061441", "#746D7A"]
-            for patch, color in zip(box2['boxes'], colors2[:len(box2['boxes'])]):
-                patch.set_facecolor(color)
-                patch.set_alpha(0.7)
-            
-            ax2.set_title('Exam Score Distribution by Family Income', fontweight='bold')
-            ax2.set_xlabel('Family Income Level')
-            ax2.set_ylabel('Exam Score')
-            ax2.grid(True, alpha=0.3)
+        ax1.set_title('High School Education\nScore Distribution', fontsize=12, fontweight='bold', pad=20)
         
+        # Education Level - College
+        college_data = df_temp[df_temp['Parental_Education_Level'] == 'College']['Score_Category'].value_counts()
+        
+        if not college_data.empty:
+            wedges2, texts2, autotexts2 = ax2.pie(college_data.values, labels=college_data.index,
+                                                 colors=colors_hs[:len(college_data)],
+                                                 autopct='%1.1f%%', startangle=90,
+                                                 wedgeprops=dict(width=0.6))
+            for autotext in autotexts2:
+                autotext.set_color('white')
+                autotext.set_fontweight('bold')
+                autotext.set_fontsize(10)
+        
+        ax2.set_title('College Education\nScore Distribution', fontsize=12, fontweight='bold', pad=20)
+        
+        # Income Level - Low
+        low_income_data = df_temp[df_temp['Family_Income'] == 'Low']['Score_Category'].value_counts()
+        colors_income = ["#4B0082", "#8A2BE2", "#9370DB", "#BA55D3", "#DA70D6"]
+        
+        if not low_income_data.empty:
+            wedges3, texts3, autotexts3 = ax3.pie(low_income_data.values, labels=low_income_data.index,
+                                                 colors=colors_income[:len(low_income_data)],
+                                                 autopct='%1.1f%%', startangle=90,
+                                                 wedgeprops=dict(width=0.6))
+            for autotext in autotexts3:
+                autotext.set_color('white')
+                autotext.set_fontweight('bold')
+                autotext.set_fontsize(10)
+        
+        ax3.set_title('Low Income\nScore Distribution', fontsize=12, fontweight='bold', pad=20)
+        
+        # Income Level - High
+        high_income_data = df_temp[df_temp['Family_Income'] == 'High']['Score_Category'].value_counts()
+        
+        if not high_income_data.empty:
+            wedges4, texts4, autotexts4 = ax4.pie(high_income_data.values, labels=high_income_data.index,
+                                                 colors=colors_income[:len(high_income_data)],
+                                                 autopct='%1.1f%%', startangle=90,
+                                                 wedgeprops=dict(width=0.6))
+            for autotext in autotexts4:
+                autotext.set_color('white')
+                autotext.set_fontweight('bold')
+                autotext.set_fontsize(10)
+        
+        ax4.set_title('High Income\nScore Distribution', fontsize=12, fontweight='bold', pad=20)
+        
+        plt.suptitle('Score Distribution by Demographics', fontsize=16, fontweight='bold', y=0.98)
         plt.tight_layout()
         return fig
     
