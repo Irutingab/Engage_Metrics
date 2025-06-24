@@ -6,7 +6,7 @@ from visualizations import Visualizations
 from analytics import Analytics
 
 class StudentDashboard:
-    """Main dashboard class that orchestrates the entire application"""
+
     def __init__(self):
         self.data_manager = DataManager()
         self.visualizations = Visualizations()
@@ -94,7 +94,7 @@ class StudentDashboard:
         return self.clean_dataframe_for_streamlit(filtered_df)
     
     def render_executive_summary(self, filtered_df):
-        """Render executive summary metrics"""
+    
         st.header("Executive Summary")
         
         # Ensure data is clean before analytics
