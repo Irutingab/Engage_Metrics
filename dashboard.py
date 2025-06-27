@@ -126,7 +126,7 @@ class StudentDashboard:
                 donut_involvement = self.visualizations.create_donut_chart(
                     filtered_df, 'Parental_Involvement', 
                     'Parental Involvement Distribution',
-                    colors=["#163CAB", "#240F65", "#3D14D0"]
+                    colors=["#16AB31", "#198C8C", "#158C4D"]
                 )
                 st.pyplot(donut_involvement)
             except Exception as e:
@@ -137,7 +137,7 @@ class StudentDashboard:
                 histogram_performance = self.visualizations.create_histogram_chart(
                     filtered_df, 'Performance_Category', 
                     'Academic Performance Distribution',
-                    colors=["#370CBA", "#736F76", "#1E00FF", "#39275A", "#2118CD"]
+                    colors=["#0CBA6F", "#1C8E8E", "#249976", "#48A962", "#329B51"]
                 )
                 st.pyplot(histogram_performance)
             except Exception as e:
@@ -151,7 +151,7 @@ class StudentDashboard:
                 donut_attendance = self.visualizations.create_donut_chart(
                     filtered_df, 'Attendance_Category', 
                     'Attendance Level Distribution',
-                    colors=["#070E35", "#4D1B83", "#6B10CD"]
+                    colors=["#2F8E87", "#42C85F", "#167679"]
                 )
                 st.pyplot(donut_attendance)
             except Exception as e:
@@ -162,7 +162,7 @@ class StudentDashboard:
                 donut_study = self.visualizations.create_donut_chart(
                     filtered_df, 'Study_Hours_Category', 
                     'Study Hours Distribution',
-                    colors=["#3A1FD5", "#3012DE", "#90ABEE"]
+                    colors=["#0F8F76", "#36CF4F", "#5DD495"]
                 )
                 st.pyplot(donut_study)
             except Exception as e:
