@@ -144,7 +144,7 @@ class Visualizations:
         """Create scatter plot of Attendance vs Exam_Score colored by Parental_Involvement"""
         fig, ax = plt.subplots(figsize=(12, 8))
         
-        colors = {'Low': "#25203A", 'Medium': "#3E0EE9", 'High': "#1E1276"}
+        colors = {'Low': "#18461D", 'Medium': "#61DEBF", 'High': "#1EB869"}
         
         for involvement in ['Low', 'Medium', 'High']:
             subset = df[df['Parental_Involvement'] == involvement]
@@ -209,7 +209,7 @@ class Visualizations:
         
         # Income Level - Low
         low_income_data = df_temp[df_temp['Family_Income'] == 'Low']['Score_Category'].value_counts()
-        colors_income = ["#4B0082", "#8A2BE2", "#9370DB", "#BA55D3", "#DA70D6"]
+        colors_income = ["#549B63", "#1F642B", "#70DBC9", "#049D46", "#98E898"]
         
         if not low_income_data.empty:
             wedges3, texts3, autotexts3 = ax3.pie(low_income_data.values, labels=low_income_data.index,
@@ -260,7 +260,7 @@ class Visualizations:
         ax1.grid(True, alpha=0.3)
         
         mean_scores = df.groupby('Parental_Involvement')['Exam_Score'].mean().reindex(involvement_order)
-        bars = ax2.bar(involvement_order, mean_scores, color=["#12042B", "#9A99AA", "#060673"])
+        bars = ax2.bar(involvement_order, mean_scores, color=["#2BA486", "#409437", "#289593"])
         ax2.set_title('Average Exam Scores by Parental Involvement', fontweight='bold')
         ax2.set_xlabel('Parental Involvement Level')
         ax2.set_ylabel('Average Exam Score')
@@ -271,7 +271,7 @@ class Visualizations:
         
         performance_by_involvement = pd.crosstab(df['Parental_Involvement'], df['Performance_Category'], normalize='index') * 100
         performance_by_involvement.plot(kind='bar', ax=ax3, stacked=True, 
-                                    color=["#05000B", "#0F06BC", "#84838A", "#4E4D56", "#2D04B4"])
+                                    color=["#278B79", "#079F16", "#ABDE97", "#419A41", "#04B45C"])
         ax3.set_title('Performance Distribution by Parental Involvement (%)', fontweight='bold')
         ax3.set_xlabel('Parental Involvement Level')
         ax3.set_ylabel('Percentage')
