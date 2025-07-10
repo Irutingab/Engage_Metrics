@@ -91,9 +91,4 @@ class Analytics:
         if 'Parental_Involvement_Num' in df_corr.columns and 'Parental_Involvement_Num' not in numeric_cols:
             numeric_cols.append('Parental_Involvement_Num')
         corr = df_corr[numeric_cols].corr()
-        import matplotlib.pyplot as plt
-        import seaborn as sns
-        fig, ax = plt.subplots(figsize=(10, 8))
-        sns.heatmap(corr, annot=True, cmap='coolwarm', fmt=".2f", ax=ax)
-        ax.set_title("Correlation Heatmap (including Parental Involvement)")
-        return fig
+       

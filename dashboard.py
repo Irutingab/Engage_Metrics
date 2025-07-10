@@ -75,23 +75,18 @@ class StudentDashboard:
         return df_clean
     
     def render_sidebar(self, df):
-        """Render sidebar filters and return filtered data"""
-        st.sidebar.header("Dashboard Filters")
+        """Render sidebar information without filters"""
+        st.sidebar.header("Dashboard Information")
         
-        # Ensure data is clean before filtering
+        # Ensure data is clean
         df = self.clean_dataframe_for_streamlit(df)
         
-        # Parental involvement filter
-        involvement_options = df['Parental_Involvement'].unique()
-        selected_involvement = st.sidebar.multiselect(
-            "Select Parental Involvement Levels",
-            options=involvement_options,
-            default=involvement_options
-        )
+        # Display basic dataset info
+        st.sidebar.metric("Total Records", len(df))
+        st.sidebar.metric("Features", len(df.columns))
         
-        # Apply filters and clean the result
-        filtered_df = self.data_manager.apply_filters(df, selected_involvement)
-        return self.clean_dataframe_for_streamlit(filtered_df)
+        # Return the full dataset without any filtering
+        return self.clean_dataframe_for_streamlit(df)
     
     def render_executive_summary(self, filtered_df):
     
@@ -110,7 +105,7 @@ class StudentDashboard:
         with col3:
             st.metric("Average Attendance", f"{insights['avg_attendance']:.1f}%")
         with col4:
-            st.metric("High Performers (≥80)", f"{insights['high_performers_pct']:.1f}%")
+            st.metric("High Performers (≥70)", f"{insights['high_performers_pct']:.1f}%")
     
     def render_distribution_charts(self, filtered_df):
         """Render engagement and performance distribution charts"""
@@ -194,6 +189,26 @@ class StudentDashboard:
                 st.pyplot(hist_hours)
             except Exception as e:
                 st.error(f"Error creating study hours histogram: {str(e)}")
+        
+        # Academic Performance Thresholds
+        st.header("Academic Performance by Grade Thresholds")
+        try:
+            threshold_chart = self.visualizations.create_academic_performance_threshold_chart(filtered_df)
+            st.pyplot(threshold_chart)
+            
+            # Add explanation text
+            st.markdown("""
+            **Understanding the Chart:**
+            - **50+**: Students scoring 50 or above (passing grade)
+            - **60+**: Students with satisfactory performance
+            - **70+**: Students with good performance
+            - **80+**: Students with very good performance  
+            - **90+**: Students with excellent performance
+            
+            This visualization helps identify performance distribution patterns and set appropriate intervention targets.
+            """)
+        except Exception as e:
+            st.error(f"Error creating academic performance threshold chart: {str(e)}")
         
         # Advanced Analysis
         st.header("Advanced Performance Analysis")
@@ -353,37 +368,37 @@ class StudentDashboard:
             for educational decision-making.
             """)
             
-            # Apply filters
-            filtered_df = self.render_sidebar(df)
+            # Get processed data (no filters applied)
+            processed_df = self.render_sidebar(df)
             
             # Render all sections with error handling
             try:
-                self.render_executive_summary(filtered_df)
+                self.render_executive_summary(processed_df)
             except Exception as e:
                 st.error(f"Error in executive summary: {str(e)}")
             
             try:
-                self.render_distribution_charts(filtered_df)
+                self.render_distribution_charts(processed_df)
             except Exception as e:
                 st.error(f"Error in distribution charts: {str(e)}")
             
             try:
-                self.render_performance_analysis(filtered_df)
+                self.render_performance_analysis(processed_df)
             except Exception as e:
                 st.error(f"Error in performance analysis: {str(e)}")
             
             try:
-                self.render_correlation_analysis(filtered_df)
+                self.render_correlation_analysis(processed_df)
             except Exception as e:
                 st.error(f"Error in correlation analysis: {str(e)}")
             
             try:
-                self.render_insights_and_recommendations(filtered_df)
+                self.render_insights_and_recommendations(processed_df)
             except Exception as e:
                 st.error(f"Error in insights: {str(e)}")
             
             try:
-                self.render_export_section(filtered_df)
+                self.render_export_section(processed_df)
             except Exception as e:
                 st.error(f"Error in export section: {str(e)}")
                 

@@ -294,3 +294,52 @@ class Visualizations:
         
         plt.tight_layout()
         return fig
+    
+    @staticmethod
+    def create_academic_performance_threshold_chart(df):
+        """Create detailed bar chart showing student counts at different grade thresholds"""
+        fig, ax = plt.subplots(figsize=(14, 8))
+        
+        # Define grade thresholds
+        thresholds = [50, 60, 70, 80, 90]
+        threshold_labels = ['50+', '60+', '70+', '80+', '90+']
+        
+        # Calculate student counts for each threshold
+        counts = []
+        for threshold in thresholds:
+            count = (df['Exam_Score'] >= threshold).sum()
+            counts.append(count)
+        
+        # Create color gradient (darker colors for higher thresholds)
+        colors = ['#ff9999', '#66b3ff', '#99ff99', '#ffcc99', '#ff99cc']
+        
+        # Create bars
+        bars = ax.bar(threshold_labels, counts, color=colors, 
+                     edgecolor='black', linewidth=1.5, alpha=0.8)
+        
+        # Add value labels on bars
+        for bar, count in zip(bars, counts):
+            height = bar.get_height()
+            percentage = (count / len(df)) * 100
+            ax.text(bar.get_x() + bar.get_width()/2, height + max(counts) * 0.01,
+                   f'{count}\n({percentage:.1f}%)', 
+                   ha='center', va='bottom', fontweight='bold', fontsize=11)
+        
+        # Customize chart
+        ax.set_title('Academic Performance: Students by Grade Thresholds', 
+                    fontsize=16, fontweight='bold', pad=20)
+        ax.set_xlabel('Grade Thresholds', fontsize=12, fontweight='bold')
+        ax.set_ylabel('Number of Students', fontsize=12, fontweight='bold')
+        ax.grid(True, alpha=0.3, axis='y')
+        
+        # Set y-axis limit to accommodate labels
+        ax.set_ylim(0, max(counts) * 1.15)
+        
+        # Add total students annotation
+        ax.text(0.02, 0.98, f'Total Students: {len(df)}', 
+               transform=ax.transAxes, fontsize=10, fontweight='bold',
+               bbox=dict(boxstyle="round,pad=0.3", facecolor="lightblue", alpha=0.7),
+               verticalalignment='top')
+        
+        plt.tight_layout()
+        return fig
