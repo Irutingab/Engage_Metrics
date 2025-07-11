@@ -18,7 +18,7 @@ class Analytics:
         n = len(df_analysis)
         if n > 30:  # Large sample
             p_value = 0.001 if abs(correlation) > 0.3 else 0.05 if abs(correlation) > 0.2 else 0.1
-        else:  # Small sample
+        else:  # Small sample 
             p_value = 0.01 if abs(correlation) > 0.5 else 0.1
         
         return correlation, p_value
