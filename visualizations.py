@@ -296,6 +296,7 @@ class Visualizations:
         return fig
     
     @staticmethod
+
     def create_parental_involvement_heatmap(df):
         """Create a focused heatmap showing the relationship between parental involvement and student performance metrics."""
         # Create score bins for better visualization
@@ -495,6 +496,3 @@ class Visualizations:
         ax.set_ylabel('Number of Students', fontsize=12)
         ax.legend()
         ax.grid(True, alpha=0.3)
-        
-        plt.tight_layout()
-        return fig

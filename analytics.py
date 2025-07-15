@@ -18,7 +18,7 @@ class Analytics:
         n = len(df_analysis)
         if n > 30:  # Large sample
             p_value = 0.001 if abs(correlation) > 0.3 else 0.05 if abs(correlation) > 0.2 else 0.1
-        else:  # Small sample
+        else:  # Small sample 
             p_value = 0.01 if abs(correlation) > 0.5 else 0.1
         
         return correlation, p_value
@@ -91,6 +91,7 @@ class Analytics:
         if 'Parental_Involvement_Num' in df_corr.columns and 'Parental_Involvement_Num' not in numeric_cols:
             numeric_cols.append('Parental_Involvement_Num')
         corr = df_corr[numeric_cols].corr()
+
         import matplotlib.pyplot as plt
         import seaborn as sns
         fig, ax = plt.subplots(figsize=(10, 8))
@@ -226,3 +227,4 @@ class Analytics:
                 })
         
         return recommendations
+
