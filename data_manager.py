@@ -3,7 +3,7 @@ import streamlit as st
 
 class DataManager:
     
-    def __init__(self, filename="student_performance_cleaned.csv"):
+    def __init__(self, filename="StudentPerformanceFactors_cleaned.csv"):
         self.filename = filename
         self.df = None
     
@@ -17,10 +17,11 @@ class DataManager:
             return None
     
     def categorize_data(self, df):
-    
         """Create categories for better visualization"""
         
-        # Handle any outliers in exam scores (cap at 100)
+
+        # Handle any outliers in exam scores (cap at 100) - should already be clean but just in case
+
         df['Exam_Score'] = df['Exam_Score'].clip(upper=100)
 
         df['Performance_Category'] = pd.cut(df['Exam_Score'], 
@@ -35,6 +36,46 @@ class DataManager:
                                         bins=[0, 10, 20, 50], 
                                         labels=['Low (≤10h)', 'Medium (11-20h)', 'High (>20h)'])
         
+        # Create Parental Engagement Score
+        df = self.create_parental_engagement_score(df)
+        
+        return df
+    
+    def create_parental_engagement_score(self, df):
+        """Create a comprehensive Parental Engagement Score combining multiple indicators"""
+        
+        # Map parental involvement to numeric values
+        involvement_scores = {'Low': 1, 'Medium': 2, 'High': 3}
+        df['Involvement_Score'] = df['Parental_Involvement'].map(involvement_scores)
+        
+        # Map parental education to numeric values
+        education_scores = {'High School': 1, 'College': 2, 'Postgraduate': 3}
+        df['Education_Score'] = df['Parental_Education_Level'].map(education_scores)
+        
+        # Map family income to numeric values
+        income_scores = {'Low': 1, 'Medium': 2, 'High': 3}
+        df['Income_Score'] = df['Family_Income'].map(income_scores)
+        
+        # Calculate weighted engagement score (involvement weighted more heavily)
+        df['Parental_Engagement_Score'] = (
+            df['Involvement_Score'] * 0.5 +  # 50% weight for direct involvement
+            df['Education_Score'] * 0.3 +    # 30% weight for education level
+            df['Income_Score'] * 0.2          # 20% weight for family income
+        )
+        
+        # Create engagement categories (handle NaN values first)
+        df['Engagement_Category'] = pd.cut(df['Parental_Engagement_Score'], 
+                                         bins=[0, 1.5, 2.5, 3], 
+                                         labels=['Low Engagement', 'Medium Engagement', 'High Engagement'])
+        
+        # Handle any NaN values in categorical columns
+        categorical_columns = ['Performance_Category', 'Attendance_Category', 'Study_Hours_Category', 'Engagement_Category']
+        for col in categorical_columns:
+            if col in df.columns:
+                # Add 'Unknown' as a category if there are NaN values
+                if df[col].isna().any():
+                    df[col] = df[col].cat.add_categories(['Unknown']).fillna('Unknown')
+        
         return df
     
     def get_processed_data(self):
@@ -43,8 +84,9 @@ class DataManager:
             if self.df is not None:
                 self.df = self.categorize_data(self.df)
         return self.df
+    
     def apply_filters(self, df, selected_involvement):
         return df[
             (df['Parental_Involvement'].isin(selected_involvement))
         ]
-        
+

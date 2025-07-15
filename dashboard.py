@@ -44,6 +44,11 @@ class StudentDashboard:
         """Clean dataframe to ensure Arrow compatibility"""
         df_clean = df.copy()
         
+        # Convert all categorical columns to strings to avoid Arrow issues
+        for col in df_clean.columns:
+            if pd.api.types.is_categorical_dtype(df_clean[col]):
+                df_clean[col] = df_clean[col].astype(str)
+        
         # Handle mixed data types that cause Arrow issues
         for col in df_clean.columns:
             if df_clean[col].dtype == 'object':
@@ -58,12 +63,6 @@ class StudentDashboard:
                 except (ValueError, TypeError):
                     # Keep as string if conversion fails
                     df_clean[col] = df_clean[col].astype(str)
-        
-        # Ensure categorical columns are properly handled
-        categorical_cols = ['Performance_Category', 'Attendance_Category', 'Study_Hours_Category']
-        for col in categorical_cols:
-            if col in df_clean.columns:
-                df_clean[col] = df_clean[col].astype(str).replace('nan', 'Unknown')
         
         # Fill any remaining NaN values
         for col in df_clean.columns:
@@ -266,46 +265,139 @@ class StudentDashboard:
         except Exception as e:
             st.error(f"Error in correlation analysis: {str(e)}")
     
-    def render_insights_and_recommendations(self, filtered_df):
-        """Render key insights and recommendations"""
-        st.header("Key Insights & Recommendations")
+    def render_parental_engagement_analysis(self, filtered_df):
+        """Render comprehensive parental engagement analysis section"""
+        st.header("🧑‍🏫 Parental Engagement Analysis")
         
-        # Clean data before insights
+        # Clean data before analysis
         filtered_df = self.clean_dataframe_for_streamlit(filtered_df)
         
-        insights = self.analytics.get_performance_insights(filtered_df)
+        # Engagement Score Distribution
+        st.subheader("Engagement Score Distribution")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            try:
+                engagement_dist = self.visualizations.create_engagement_score_distribution(filtered_df)
+                st.pyplot(engagement_dist)
+            except Exception as e:
+                st.error(f"Error creating engagement distribution: {str(e)}")
+        
+        with col2:
+            try:
+                engagement_insights = self.analytics.get_engagement_insights(filtered_df)
+                st.metric("Average Engagement Score", f"{engagement_insights['avg_engagement_score']:.2f}")
+                st.metric("Median Engagement Score", f"{engagement_insights['median_engagement_score']:.2f}")
+                
+                # Show distribution
+                if 'engagement_distribution' in engagement_insights:
+                    st.write("**Engagement Distribution:**")
+                    for category, percentage in engagement_insights['engagement_distribution'].items():
+                        st.write(f"• {category}: {percentage:.1f}%")
+            except Exception as e:
+                st.error(f"Error getting engagement insights: {str(e)}")
+        
+        # Engagement vs Performance Analysis
+        st.subheader("📈 Performance vs. Engagement")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            try:
+                scatter_plot = self.visualizations.create_engagement_score_scatter(filtered_df)
+                st.pyplot(scatter_plot)
+            except Exception as e:
+                st.error(f"Error creating engagement scatter plot: {str(e)}")
+        
+        with col2:
+            try:
+                boxplot = self.visualizations.create_performance_vs_engagement_boxplot(filtered_df)
+                st.pyplot(boxplot)
+            except Exception as e:
+                st.error(f"Error creating engagement boxplot: {str(e)}")
+        
+        # Education Level Analysis
+        st.subheader("Engagement by Parental Education Level")
+        try:
+            education_chart = self.visualizations.create_engagement_by_education_level(filtered_df)
+            st.pyplot(education_chart)
+            
+            st.markdown("""
+            **Understanding the Chart:**
+            - Shows how parental involvement varies by education level
+            - Higher education levels tend to show more involvement
+            - Helps identify intervention opportunities
+            """)
+        except Exception as e:
+            st.error(f"Error creating education level chart: {str(e)}")
+        
+        # Engagement Correlations
+        st.subheader("🔍 Engagement Factor Correlations")
+        try:
+            correlation_heatmap = self.visualizations.create_engagement_correlation_heatmap(filtered_df)
+            st.pyplot(correlation_heatmap)
+            
+            # Show correlation insights
+            engagement_insights = self.analytics.get_engagement_insights(filtered_df)
+            if 'engagement_correlations' in engagement_insights:
+                st.write("**Key Correlations with Exam Performance:**")
+                correlations = engagement_insights['engagement_correlations']
+                for factor, corr in correlations.items():
+                    if factor != 'Exam_Score':
+                        strength = "Strong" if abs(corr) > 0.5 else "Moderate" if abs(corr) > 0.3 else "Weak"
+                        st.write(f"• {factor}: {corr:.3f} ({strength})")
+        except Exception as e:
+            st.error(f"Error in engagement correlations: {str(e)}")
+    
+    def render_actionable_insights(self, filtered_df):
+        """Render actionable insights and recommendations based on engagement analysis"""
+        st.header("💡 Actionable Insights & Recommendations")
+        
+        # Clean data before analysis
+        filtered_df = self.clean_dataframe_for_streamlit(filtered_df)
         
         col1, col2 = st.columns(2)
         
         with col1:
-            st.subheader("Performance Insights")
-            if 'involvement_impact' in insights:
-                st.markdown(f"""
-                <div class='metric-card'>
-                    <strong>Parental Involvement Impact:</strong><br>
-                    High involvement students score {insights['involvement_impact']:.1f} points higher on average
-                    ({insights['high_involvement_mean']:.1f} vs {insights['low_involvement_mean']:.1f})
-                </div>
-                """, unsafe_allow_html=True)
-            
-            if 'high_perf_traits' in insights:
-                st.write("**Common traits of high performers:**")
-                for trait, percentage in insights['high_perf_traits'].items():
-                    st.write(f"• {trait}: {percentage:.1f}%")
+            st.subheader("📊 Key Findings")
+            try:
+                impact_analysis = self.analytics.analyze_engagement_factors_impact(filtered_df)
+                
+                st.write("**Impact of Engagement Factors:**")
+                for factor, analysis in impact_analysis.items():
+                    st.write(f"**{factor.replace('_', ' ')}:**")
+                    st.write(f"• Correlation with performance: {analysis['correlation']:.3f}")
+                    st.write(f"• Performance gap: {analysis['effect_size']:.1f} points")
+                    
+                    # Show mean scores by category
+                    st.write("• Average scores by level:")
+                    for level, score in analysis['mean_scores_by_category'].items():
+                        st.write(f"  - {level}: {score:.1f}")
+                    st.write("")
+            except Exception as e:
+                st.error(f"Error in impact analysis: {str(e)}")
         
         with col2:
-            st.subheader("Actionable Recommendations")
-            recommendations = [
-                "**Enhance Parental Engagement Programs**: Focus on involving parents in academic planning",
-                "**Attendance Improvement Initiatives**: Target students with <85% attendance",
-                "**Study Habits Workshop**: Promote effective study time management",
-                "**School-Family Communication**: Strengthen regular progress updates",
-                "**Peer Support Groups**: Connect high and low-performing students"
-            ]
-            
-            for rec in recommendations:
-                st.markdown(f"• {rec}")
-    
+            st.subheader("🎯 Recommendations")
+            try:
+                recommendations = self.analytics.get_engagement_recommendations(filtered_df)
+                
+                for i, rec in enumerate(recommendations, 1):
+                    priority_color = "🔴" if rec['priority'] == 'High' else "🟡"
+                    st.markdown(f"""
+                    **{priority_color} Recommendation {i}: {rec['area']}**
+                    
+                    {rec['recommendation']}
+                    
+                    *Expected Impact:* {rec['expected_impact']}
+                    """)
+                    st.write("---")
+                
+                if not recommendations:
+                    st.info("No specific recommendations generated - current engagement levels appear optimal!")
+                    
+            except Exception as e:
+                st.error(f"Error generating recommendations: {str(e)}")
+
     def render_export_section(self, filtered_df):
         """Render data export and summary section"""
         st.header("Export Analysis")
@@ -361,7 +453,7 @@ class StudentDashboard:
             df = self.clean_dataframe_for_streamlit(df)
             
             # Title and description
-            st.title("Student Performance & Parental Engagement Dashboard")
+            st.title("The power of parental involvement in student performance")
             st.markdown("""
             This dashboard analyzes the relationship between parental involvement and student performance using 
             professional visualizations including donut charts, pie charts, and histograms to provide clear insights
@@ -393,15 +485,10 @@ class StudentDashboard:
                 st.error(f"Error in correlation analysis: {str(e)}")
             
             try:
-                self.render_insights_and_recommendations(processed_df)
+
+                self.render_parental_engagement_analysis(filtered_df)
             except Exception as e:
-                st.error(f"Error in insights: {str(e)}")
+                st.error(f"Error in parental engagement analysis: {str(e)}")
             
             try:
-                self.render_export_section(processed_df)
-            except Exception as e:
-                st.error(f"Error in export section: {str(e)}")
-                
-        except Exception as e:
-            st.error(f"Critical error in dashboard: {str(e)}")
-            st.write("Please check your data and try again.")
+                self.render_actionable_insights(filtered_df)
