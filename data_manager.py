@@ -17,7 +17,7 @@ class DataManager:
             return None
     
     def categorize_data(self, df):
-        
+    
         """Create categories for better visualization"""
 
         df['Performance_Category'] = pd.cut(df['Exam_Score'], 
