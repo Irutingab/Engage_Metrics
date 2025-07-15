@@ -17,7 +17,7 @@ class DataManager:
             return None
     
     def categorize_data(self, df):
-        
+    
         """Create categories for better visualization"""
         
         # Handle any outliers in exam scores (cap at 100)
