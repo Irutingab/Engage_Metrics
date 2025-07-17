@@ -18,12 +18,6 @@ class DataManager:
     
     def categorize_data(self, df):
         """Create categories for better visualization"""
-        
-
-        # Handle any outliers in exam scores (cap at 100) - should already be clean but just in case
-
-        df['Exam_Score'] = df['Exam_Score'].clip(upper=100)
-
         df['Performance_Category'] = pd.cut(df['Exam_Score'], 
                                         bins=[0, 60, 70, 80, 90, 100], 
                                         labels=['F (0-59)', 'D (60-69)', 'C (70-79)', 'B (80-89)', 'A (90-100)'])
