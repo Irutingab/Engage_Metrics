@@ -168,7 +168,7 @@ class Visualizations:
     @staticmethod
     def create_box_plot_scores_by_education(df):
         """Create clear donut charts showing score distributions by demographics"""
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
+        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(20, 14))
         
         # Create score categories
         df_temp = df.copy()
@@ -178,17 +178,23 @@ class Visualizations:
         
         # Education Level - High School
         hs_data = df_temp[df_temp['Parental_Education_Level'] == 'High School']['Score_Category'].value_counts()
-        colors_hs = ["#8B0000", "#FF4500", "#FFD700", "#32CD32", "#006400"]
+        colors_hs = ["#008B48", "#99FF00", "#FFD700", "#32CD32", "#006400"]
         
         if not hs_data.empty:
-            wedges1, texts1, autotexts1 = ax1.pie(hs_data.values, labels=hs_data.index,
+            wedges1, texts1, autotexts1 = ax1.pie(hs_data.values, labels=None,
                                                  colors=colors_hs[:len(hs_data)],
-                                                 autopct='%1.1f%%', startangle=90,
-                                                 wedgeprops=dict(width=0.6))
+                                                 autopct=lambda pct: f'{pct:.1f}%' if pct > 5 else '',
+                                                 startangle=90,
+                                                 wedgeprops=dict(width=0.6),
+                                                 pctdistance=0.85)
             for autotext in autotexts1:
                 autotext.set_color('white')
                 autotext.set_fontweight('bold')
-                autotext.set_fontsize(10)
+                autotext.set_fontsize(9)
+            
+            # Add legend instead of labels on pie
+            ax1.legend(wedges1, [f'{label}: {val}' for label, val in zip(hs_data.index, hs_data.values)], 
+                      loc='center left', bbox_to_anchor=(1, 0, 0.5, 1), fontsize=8)
         
         ax1.set_title('High School Education\nScore Distribution', fontsize=12, fontweight='bold', pad=20)
         
@@ -196,14 +202,20 @@ class Visualizations:
         college_data = df_temp[df_temp['Parental_Education_Level'] == 'College']['Score_Category'].value_counts()
         
         if not college_data.empty:
-            wedges2, texts2, autotexts2 = ax2.pie(college_data.values, labels=college_data.index,
+            wedges2, texts2, autotexts2 = ax2.pie(college_data.values, labels=None,
                                                  colors=colors_hs[:len(college_data)],
-                                                 autopct='%1.1f%%', startangle=90,
-                                                 wedgeprops=dict(width=0.6))
+                                                 autopct=lambda pct: f'{pct:.1f}%' if pct > 5 else '',
+                                                 startangle=90,
+                                                 wedgeprops=dict(width=0.6),
+                                                 pctdistance=0.85)
             for autotext in autotexts2:
                 autotext.set_color('white')
                 autotext.set_fontweight('bold')
-                autotext.set_fontsize(10)
+                autotext.set_fontsize(9)
+            
+            # Add legend instead of labels on pie
+            ax2.legend(wedges2, [f'{label}: {val}' for label, val in zip(college_data.index, college_data.values)], 
+                      loc='center left', bbox_to_anchor=(1, 0, 0.5, 1), fontsize=8)
         
         ax2.set_title('College Education\nScore Distribution', fontsize=12, fontweight='bold', pad=20)
         
@@ -212,14 +224,20 @@ class Visualizations:
         colors_income = ["#549B63", "#1F642B", "#70DBC9", "#049D46", "#98E898"]
         
         if not low_income_data.empty:
-            wedges3, texts3, autotexts3 = ax3.pie(low_income_data.values, labels=low_income_data.index,
+            wedges3, texts3, autotexts3 = ax3.pie(low_income_data.values, labels=None,
                                                  colors=colors_income[:len(low_income_data)],
-                                                 autopct='%1.1f%%', startangle=90,
-                                                 wedgeprops=dict(width=0.6))
+                                                 autopct=lambda pct: f'{pct:.1f}%' if pct > 5 else '',
+                                                 startangle=90,
+                                                 wedgeprops=dict(width=0.6),
+                                                 pctdistance=0.85)
             for autotext in autotexts3:
                 autotext.set_color('white')
                 autotext.set_fontweight('bold')
-                autotext.set_fontsize(10)
+                autotext.set_fontsize(9)
+            
+            # Add legend instead of labels on pie
+            ax3.legend(wedges3, [f'{label}: {val}' for label, val in zip(low_income_data.index, low_income_data.values)], 
+                      loc='center left', bbox_to_anchor=(1, 0, 0.5, 1), fontsize=8)
         
         ax3.set_title('Low Income\nScore Distribution', fontsize=12, fontweight='bold', pad=20)
         
@@ -227,19 +245,25 @@ class Visualizations:
         high_income_data = df_temp[df_temp['Family_Income'] == 'High']['Score_Category'].value_counts()
         
         if not high_income_data.empty:
-            wedges4, texts4, autotexts4 = ax4.pie(high_income_data.values, labels=high_income_data.index,
+            wedges4, texts4, autotexts4 = ax4.pie(high_income_data.values, labels=None,
                                                  colors=colors_income[:len(high_income_data)],
-                                                 autopct='%1.1f%%', startangle=90,
-                                                 wedgeprops=dict(width=0.6))
+                                                 autopct=lambda pct: f'{pct:.1f}%' if pct > 5 else '',
+                                                 startangle=90,
+                                                 wedgeprops=dict(width=0.6),
+                                                 pctdistance=0.85)
             for autotext in autotexts4:
                 autotext.set_color('white')
                 autotext.set_fontweight('bold')
-                autotext.set_fontsize(10)
+                autotext.set_fontsize(9)
+            
+            # Add legend instead of labels on pie
+            ax4.legend(wedges4, [f'{label}: {val}' for label, val in zip(high_income_data.index, high_income_data.values)], 
+                      loc='center left', bbox_to_anchor=(1, 0, 0.5, 1), fontsize=8)
         
         ax4.set_title('High Income\nScore Distribution', fontsize=12, fontweight='bold', pad=20)
         
-        plt.suptitle('Score Distribution by Demographics', fontsize=16, fontweight='bold', y=0.98)
-        plt.tight_layout()
+        plt.suptitle('Score Distribution by Demographics', fontsize=18, fontweight='bold', y=0.95)
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
         return fig
     
     @staticmethod
@@ -337,7 +361,7 @@ class Visualizations:
                        color=text_color, fontweight='bold', fontsize=10)
         
         ax.set_title('Parental Involvement vs Student Score Distribution', fontsize=16, pad=20)
-        ax.set_xlabel('Exam Score Ranges', fontsize=12)
+        ax.set_xlabel('Exam Score Ranges', fontsize=10)
         ax.set_ylabel('Parental Involvement Level', fontsize=12)
         
         plt.tight_layout()
@@ -349,7 +373,7 @@ class Visualizations:
         fig, ax = plt.subplots(figsize=(12, 8))
         
         # Create scatter plot with different colors for different involvement levels
-        involvement_colors = {'Low': '#FF6B6B', 'Medium': '#4ECDC4', 'High': '#45B7D1'}
+        involvement_colors = {'Low': "#6BFFA6", 'Medium': "#4ECD7D", 'High': "#97D145"}
         
         for involvement in ['Low', 'Medium', 'High']:
             mask = df['Parental_Involvement'] == involvement
@@ -391,7 +415,7 @@ class Visualizations:
         
         # Create stacked bar chart
         engagement_education.plot(kind='bar', stacked=True, ax=ax, 
-                                color=['#FF6B6B', '#4ECDC4', '#45B7D1'])
+                                color=["#6BFFA9", "#5DCD4E", "#45D17F"])
         
         ax.set_title('Parental Involvement Distribution by Education Level', fontsize=16, pad=20)
         ax.set_xlabel('Parental Education Level', fontsize=12)
@@ -420,7 +444,7 @@ class Visualizations:
         bp = ax.boxplot(boxplot_data, labels=engagement_categories, patch_artist=True)
         
         # Color the boxes
-        colors = ['#FF6B6B', '#4ECDC4', '#45B7D1']
+        colors = ["#6BFF90", "#76CD4E", "#97D145"]
         for patch, color in zip(bp['boxes'], colors):
             patch.set_facecolor(color)
             patch.set_alpha(0.7)

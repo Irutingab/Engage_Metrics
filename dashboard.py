@@ -109,7 +109,7 @@ class StudentDashboard:
         with col3:
             st.metric("Average Attendance", f"{insights['avg_attendance']:.1f}%")
         with col4:
-            st.metric("High Performers (≥80)", f"{insights['high_performers_pct']:.1f}%")
+            st.metric("High Performers (>70)", f"{insights['high_performers_pct']:.1f}%")
     
     def render_distribution_charts(self, filtered_df):
         """Render engagement and performance distribution charts"""
@@ -362,69 +362,108 @@ class StudentDashboard:
                 st.error(f"Error in impact analysis: {str(e)}")
         
         with col2:
-            st.subheader("🎯 Recommendations")
+            st.subheader("🎯 Comprehensive Recommendations")
             try:
                 recommendations = self.analytics.get_engagement_recommendations(filtered_df)
                 
                 for i, rec in enumerate(recommendations, 1):
-                    priority_color = "🔴" if rec['priority'] == 'High' else "🟡"
-                    st.markdown(f"""
-                    **{priority_color} Recommendation {i}: {rec['area']}**
+                    priority_color = "🔴" if rec['priority'] == 'High' else "🟡" if rec['priority'] == 'Medium' else "🟢"
                     
-                    {rec['recommendation']}
-                    
-                    *Expected Impact:* {rec['expected_impact']}
-                    """)
-                    st.write("---")
+                    # Create expandable recommendation sections
+                    with st.expander(f"{priority_color} {rec['priority']} Priority: {rec['area']}", expanded=(rec['priority'] == 'High')):
+                        st.markdown(f"""
+                        **📊 Finding:** {rec['recommendation']}
+                        
+                        **💡 Expected Impact:** {rec['expected_impact']}
+                        """)
+                        
+                        # Show specific actions if available
+                        if 'specific_actions' in rec:
+                            st.markdown("**🔧 Specific Actions to Take:**")
+                            for action in rec['specific_actions']:
+                                st.markdown(f"• {action}")
+                        
+                        st.write("")
                 
                 if not recommendations:
                     st.info("No specific recommendations generated - current engagement levels appear optimal!")
                     
             except Exception as e:
                 st.error(f"Error generating recommendations: {str(e)}")
-
-    def render_export_section(self, filtered_df):
-        """Render data export and summary section"""
-        st.header("Export Analysis")
         
-        # Clean data before export
-        filtered_df = self.clean_dataframe_for_streamlit(filtered_df)
+        # Display detailed recommendations
+        st.subheader("📋 Detailed Action Plan")
+        
+        for i, rec in enumerate(recommendations, 1):
+            priority_color = {'High': '🔴', 'Medium': '🟡', 'Low': '🟢'}[rec['priority']]
+            
+            with st.expander(f"{priority_color} {rec['area']} (Priority: {rec['priority']})"):
+                st.write(f"**Recommendation:** {rec['recommendation']}")
+                st.write(f"**Expected Impact:** {rec['expected_impact']}")
                 
+                st.write("**Specific Actions:**")
+                for action in rec['specific_actions']:
+                    st.write(f"• {action}")
+    
+    def render_implementation_timeline(self, df):
+        """Render implementation timeline"""
+        st.subheader("📅 Implementation Timeline")
+        
+        timeline = self.analytics.get_implementation_timeline(df)
+        
         col1, col2 = st.columns(2)
         
         with col1:
-            if st.button("Download Filtered Data"):
-                # Ensure clean data for export
-                clean_export_df = self.clean_dataframe_for_streamlit(filtered_df)
-                csv = clean_export_df.to_csv(index=False)
-                st.download_button(
-                    label="Download CSV",
-                    data=csv,
-                    file_name="student_performance_analysis.csv",
-                    mime="text/csv"
-                )
+            st.write("### Immediate Actions (0-30 days)")
+            for item in timeline['immediate']:
+                st.info(f"🔴 **{item['action']}**\n{item['description']}")
+            
+            st.write("### Short-term Goals (1-3 months)")
+            for item in timeline['short_term']:
+                st.warning(f"🟡 **{item['action']}**\n{item['description']}")
         
         with col2:
-            try:
-                insights = self.analytics.get_performance_insights(filtered_df)
-                summary_stats = {
-                    'Metric': ['Total Students', 'Avg Exam Score', 'Avg Attendance', 'High Performers %', 'High Involvement %'],
-                    'Value': [
-                        str(insights['total_students']),
-                        f"{insights['avg_score']:.1f}",
-                        f"{insights['avg_attendance']:.1f}",
-                        f"{insights['high_performers_pct']:.1f}",
-                        f"{insights['high_involvement_pct']:.1f}"
-                    ]
-                }
-                summary_df = pd.DataFrame(summary_stats)
-                # Ensure summary dataframe is Arrow-compatible
-                summary_df['Metric'] = summary_df['Metric'].astype(str)
-                summary_df['Value'] = summary_df['Value'].astype(str)
-                st.dataframe(summary_df)
-            except Exception as e:
-                st.error(f"Error creating summary: {str(e)}")
+            st.write("### Medium-term Projects (3-6 months)")
+            for item in timeline['medium_term']:
+                st.success(f"🟢 **{item['action']}**\n{item['description']}")
+            
+            st.write("### Long-term Initiatives (6+ months)")
+            for item in timeline['long_term']:
+                st.info(f"🔵 **{item['action']}**\n{item['description']}")
     
+    def render_success_metrics(self, df):
+        """Render success metrics and KPI tracking"""
+        st.subheader("📊 Success Metrics & KPI Tracking")
+        
+        metrics = self.analytics.get_success_metrics(df)
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("### Current Performance")
+            st.metric("Average Exam Score", f"{metrics['current']['avg_exam_score']:.1f}")
+            st.metric("High Performers (%)", f"{metrics['current']['high_performers_pct']:.1f}%")
+            st.metric("Low Engagement (%)", f"{metrics['current']['low_engagement_pct']:.1f}%")
+            st.metric("Attendance Rate (%)", f"{metrics['current']['attendance_rate']:.1f}%")
+            st.metric("High Parental Involvement (%)", f"{metrics['current']['high_involvement_pct']:.1f}%")
+        
+        with col2:
+            st.write("### Target Metrics")
+            st.metric("Target Avg Score", f"{metrics['targets']['target_avg_score']:.1f}", 
+                     delta=f"+{metrics['targets']['target_avg_score'] - metrics['current']['avg_exam_score']:.1f}")
+            st.metric("Target High Performers", f"{metrics['targets']['target_high_performers']:.1f}%", 
+                     delta=f"+{metrics['targets']['target_high_performers'] - metrics['current']['high_performers_pct']:.1f}%")
+            st.metric("Target Low Engagement", f"{metrics['targets']['target_low_engagement']:.1f}%", 
+                     delta=f"{metrics['targets']['target_low_engagement'] - metrics['current']['low_engagement_pct']:.1f}%")
+            st.metric("Target Attendance", f"{metrics['targets']['target_attendance']:.1f}%", 
+                     delta=f"+{metrics['targets']['target_attendance'] - metrics['current']['attendance_rate']:.1f}%")
+            st.metric("Target Involvement", f"{metrics['targets']['target_involvement']:.1f}%", 
+                     delta=f"+{metrics['targets']['target_involvement'] - metrics['current']['high_involvement_pct']:.1f}%")
+        
+        st.write("### Key Performance Indicators to Track")
+        for kpi in metrics['tracking_kpis']:
+            st.write(f"• {kpi}")
+
     def run(self):
         """Main method to run the dashboard"""
         try:

@@ -130,7 +130,7 @@ class Analytics:
         engagement_insights['engagement_correlations'] = engagement_correlations.to_dict()
         
         # Top factors for high performers
-        high_performers = df[df['Exam_Score'] >= 80]
+        high_performers = df[df['Exam_Score'] > 70]
         if len(high_performers) > 0:
             engagement_insights['high_performer_engagement_traits'] = {
                 'avg_engagement_score': high_performers['Parental_Engagement_Score'].mean(),
@@ -176,53 +176,244 @@ class Analytics:
     
     @staticmethod
     def get_engagement_recommendations(df):
-        """Generate actionable recommendations based on engagement analysis"""
+        """Generate comprehensive actionable recommendations based on engagement analysis"""
         recommendations = []
         
         # Analyze current state
         low_engagement_pct = (df['Engagement_Category'] == 'Low Engagement').mean() * 100
         high_involvement_performance = df[df['Parental_Involvement'] == 'High']['Exam_Score'].mean()
         low_involvement_performance = df[df['Parental_Involvement'] == 'Low']['Exam_Score'].mean()
+        avg_score = df['Exam_Score'].mean()
         
-        # Generate specific recommendations
+        # 1. PARENTAL ENGAGEMENT RECOMMENDATIONS
         if low_engagement_pct > 30:
             recommendations.append({
                 'priority': 'High',
                 'area': 'Parent Engagement Programs',
                 'recommendation': f'Implement targeted parent engagement programs - {low_engagement_pct:.1f}% of families show low engagement',
-                'expected_impact': 'Could improve average scores by 3-5 points'
+                'expected_impact': 'Could improve average scores by 3-5 points',
+                'specific_actions': [
+                    'Monthly parent-teacher conferences',
+                    'Home visit programs for low-engagement families',
+                    'Parent education workshops on supporting student learning',
+                    'Digital communication platforms for regular updates'
+                ]
             })
         
         if high_involvement_performance - low_involvement_performance > 3:
             recommendations.append({
                 'priority': 'High',
-                'area': 'Family Communication',
+                'area': 'Family Communication Enhancement',
                 'recommendation': f'High involvement parents see {high_involvement_performance - low_involvement_performance:.1f} point advantage - expand communication channels',
-                'expected_impact': 'Could reduce achievement gap significantly'
+                'expected_impact': 'Could reduce achievement gap by 20-30%',
+                'specific_actions': [
+                    'Weekly progress reports via SMS/email',
+                    'Parent portal for real-time grade tracking',
+                    'Bilingual communication for diverse families',
+                    'Regular celebration of student achievements'
+                ]
             })
         
-        # Education level recommendations
+        # 2. EDUCATION LEVEL BASED RECOMMENDATIONS
         education_scores = df.groupby('Parental_Education_Level')['Exam_Score'].mean()
         if 'Postgraduate' in education_scores.index and 'High School' in education_scores.index:
             education_gap = education_scores['Postgraduate'] - education_scores['High School']
             if education_gap > 5:
                 recommendations.append({
-                    'priority': 'Medium',
-                    'area': 'Educational Support',
-                    'recommendation': f'Provide additional academic support resources - {education_gap:.1f} point gap between education levels',
-                    'expected_impact': 'Could help level the playing field for all families'
+                    'priority': 'High',
+                    'area': 'Educational Equity Support',
+                    'recommendation': f'Address {education_gap:.1f}-point achievement gap between education levels',
+                    'expected_impact': 'Could improve scores for 40% of students by 4-6 points',
+                    'specific_actions': [
+                        'Tutoring programs for students with less-educated parents',
+                        'Academic enrichment workshops for parents',
+                        'Homework help centers with trained volunteers',
+                        'College preparation support regardless of parent background'
+                    ]
                 })
         
-        # Income level recommendations
+        # 3. INCOME-BASED RECOMMENDATIONS
         income_scores = df.groupby('Family_Income')['Exam_Score'].mean()
         if 'High' in income_scores.index and 'Low' in income_scores.index:
             income_gap = income_scores['High'] - income_scores['Low']
             if income_gap > 3:
                 recommendations.append({
-                    'priority': 'Medium',
-                    'area': 'Resource Equity',
-                    'recommendation': f'Address resource inequality - {income_gap:.1f} point gap between income levels',
-                    'expected_impact': 'Could improve equity and overall performance'
+                    'priority': 'High',
+                    'area': 'Resource Equity Initiative',
+                    'recommendation': f'Bridge {income_gap:.1f}-point gap between income levels through resource support',
+                    'expected_impact': 'Could improve equity and boost overall performance by 3-4 points',
+                    'specific_actions': [
+                        'Free technology lending program (laptops, tablets)',
+                        'Subsidized internet access for low-income families',
+                        'Free school supplies and educational materials',
+                        'Breakfast and lunch programs to ensure basic needs are met'
+                    ]
                 })
         
+        # 4. ATTENDANCE-BASED RECOMMENDATIONS
+        low_attendance_students = df[df['Attendance'] < 85]
+        if len(low_attendance_students) > 0:
+            low_attendance_pct = (len(low_attendance_students) / len(df)) * 100
+            avg_score_low_attendance = low_attendance_students['Exam_Score'].mean()
+            avg_score_high_attendance = df[df['Attendance'] >= 85]['Exam_Score'].mean()
+            attendance_gap = avg_score_high_attendance - avg_score_low_attendance
+            
+            recommendations.append({
+                'priority': 'Medium',
+                'area': 'Attendance Improvement',
+                'recommendation': f'{low_attendance_pct:.1f}% of students have attendance <85% - {attendance_gap:.1f} point performance gap',
+                'expected_impact': 'Could improve overall performance by 2-3 points',
+                'specific_actions': [
+                    'Early intervention for attendance issues',
+                    'Transportation support for struggling families',
+                    'Flexible scheduling for working student families',
+                    'Attendance rewards and recognition programs'
+                ]
+            })
+        
+        # 5. STUDY HABITS RECOMMENDATIONS
+        high_study_hours = df[df['Hours_Studied'] > 20]['Exam_Score'].mean()
+        low_study_hours = df[df['Hours_Studied'] <= 10]['Exam_Score'].mean()
+        study_gap = high_study_hours - low_study_hours
+        
+        if study_gap > 4:
+            recommendations.append({
+                'priority': 'Medium',
+                'area': 'Study Skills Development',
+                'recommendation': f'Students studying >20hrs score {study_gap:.1f} points higher - enhance study skills training',
+                'expected_impact': 'Could improve time management and academic performance',
+                'specific_actions': [
+                    'Study skills workshops for students and parents',
+                    'Time management training sessions',
+                    'Study group facilitation programs',
+                    'Academic coaching for struggling students'
+                ]
+            })
+        
+        # 6. MOTIVATION-BASED RECOMMENDATIONS
+        high_motivation = df[df['Motivation_Level'] == 'High']['Exam_Score'].mean()
+        low_motivation = df[df['Motivation_Level'] == 'Low']['Exam_Score'].mean()
+        motivation_gap = high_motivation - low_motivation
+        
+        if motivation_gap > 5:
+            recommendations.append({
+                'priority': 'Medium',
+                'area': 'Student Motivation Enhancement',
+                'recommendation': f'High motivation students outperform by {motivation_gap:.1f} points - boost student engagement',
+                'expected_impact': 'Could increase intrinsic motivation and long-term success',
+                'specific_actions': [
+                    'Career exploration and mentorship programs',
+                    'Goal-setting workshops with students',
+                    'Peer tutoring and support networks',
+                    'Recognition programs for academic improvement'
+                ]
+            })
+        
+        # 7. TECHNOLOGY ACCESS RECOMMENDATIONS
+        internet_yes = df[df['Internet_Access'] == 'Yes']['Exam_Score'].mean()
+        internet_no = df[df['Internet_Access'] == 'No']['Exam_Score'].mean()
+        internet_gap = internet_yes - internet_no
+        
+        if internet_gap > 2:
+            no_internet_pct = (df['Internet_Access'] == 'No').mean() * 100
+            recommendations.append({
+                'priority': 'Medium',
+                'area': 'Digital Equity',
+                'recommendation': f'{no_internet_pct:.1f}% lack internet access - {internet_gap:.1f} point performance gap',
+                'expected_impact': 'Could modernize learning and improve digital literacy',
+                'specific_actions': [
+                    'Partner with ISPs for discounted internet access',
+                    'Mobile hotspot lending programs',
+                    'Computer labs with extended hours',
+                    'Digital literacy training for families'
+                ]
+            })
+        
+        # 8. OVERALL PERFORMANCE RECOMMENDATIONS
+        if avg_score < 70:
+            recommendations.append({
+                'priority': 'High',
+                'area': 'Comprehensive Academic Support',
+                'recommendation': f'Overall average score is {avg_score:.1f} - implement multi-faceted improvement strategy',
+                'expected_impact': 'Could raise overall performance to target levels',
+                'specific_actions': [
+                    'Comprehensive needs assessment for each student',
+                    'Individualized learning plans',
+                    'Extended learning time programs',
+                    'Multi-tiered intervention system'
+                ]
+            })
+        
         return recommendations
+    
+    @staticmethod
+    def get_implementation_timeline(df):
+        """Generate implementation timeline for recommendations"""
+        recommendations = Analytics.get_engagement_recommendations(df)
+        
+        timeline = {
+            'immediate': [],  # 0-30 days
+            'short_term': [],  # 1-3 months
+            'medium_term': [],  # 3-6 months
+            'long_term': []  # 6+ months
+        }
+        
+        for rec in recommendations:
+            if rec['priority'] == 'High':
+                if rec['area'] in ['Family Communication Enhancement', 'Parent Engagement Programs']:
+                    timeline['immediate'].append({
+                        'action': f"Start {rec['area']} initiative",
+                        'description': rec['recommendation'][:100] + "...",
+                        'priority': rec['priority']
+                    })
+                else:
+                    timeline['short_term'].append({
+                        'action': f"Implement {rec['area']} program",
+                        'description': rec['recommendation'][:100] + "...",
+                        'priority': rec['priority']
+                    })
+            elif rec['priority'] == 'Medium':
+                timeline['medium_term'].append({
+                    'action': f"Launch {rec['area']} initiative",
+                    'description': rec['recommendation'][:100] + "...",
+                    'priority': rec['priority']
+                })
+            else:
+                timeline['long_term'].append({
+                    'action': f"Establish {rec['area']} program",
+                    'description': rec['recommendation'][:100] + "...",
+                    'priority': rec['priority']
+                })
+        
+        return timeline
+    
+    @staticmethod
+    def get_success_metrics(df):
+        """Define success metrics for tracking recommendation effectiveness"""
+        current_stats = {
+            'avg_exam_score': df['Exam_Score'].mean(),
+            'high_performers_pct': (df['Exam_Score'] > 70).mean() * 100,
+            'low_engagement_pct': (df['Engagement_Category'] == 'Low Engagement').mean() * 100,
+            'attendance_rate': df['Attendance'].mean(),
+            'high_involvement_pct': (df['Parental_Involvement'] == 'High').mean() * 100
+        }
+        
+        target_metrics = {
+            'target_avg_score': min(current_stats['avg_exam_score'] + 5, 95),
+            'target_high_performers': min(current_stats['high_performers_pct'] + 15, 40),
+            'target_low_engagement': max(current_stats['low_engagement_pct'] - 10, 10),
+            'target_attendance': min(current_stats['attendance_rate'] + 5, 95),
+            'target_involvement': min(current_stats['high_involvement_pct'] + 20, 50)
+        }
+        
+        return {
+            'current': current_stats,
+            'targets': target_metrics,
+            'tracking_kpis': [
+                'Monthly parent engagement participation rates',
+                'Student academic performance trends',
+                'Attendance improvement rates',
+                'Family satisfaction surveys',
+                'Teacher feedback on parent involvement'
+            ]
+        }
