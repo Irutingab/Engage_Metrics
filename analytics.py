@@ -18,7 +18,7 @@ class Analytics:
         n = len(df_analysis)
         if n > 30:  # Large sample
             p_value = 0.001 if abs(correlation) > 0.3 else 0.05 if abs(correlation) > 0.2 else 0.1
-        else:  # Small sample
+        else:  # Small sample 
             p_value = 0.01 if abs(correlation) > 0.5 else 0.1
         
         return correlation, p_value
@@ -91,6 +91,7 @@ class Analytics:
         if 'Parental_Involvement_Num' in df_corr.columns and 'Parental_Involvement_Num' not in numeric_cols:
             numeric_cols.append('Parental_Involvement_Num')
         corr = df_corr[numeric_cols].corr()
+
         import matplotlib.pyplot as plt
         import seaborn as sns
         fig, ax = plt.subplots(figsize=(10, 8))
@@ -345,75 +346,3 @@ class Analytics:
             })
         
         return recommendations
-    
-    @staticmethod
-    def get_implementation_timeline(df):
-        """Generate implementation timeline for recommendations"""
-        recommendations = Analytics.get_engagement_recommendations(df)
-        
-        timeline = {
-            'immediate': [],  # 0-30 days
-            'short_term': [],  # 1-3 months
-            'medium_term': [],  # 3-6 months
-            'long_term': []  # 6+ months
-        }
-        
-        for rec in recommendations:
-            if rec['priority'] == 'High':
-                if rec['area'] in ['Family Communication Enhancement', 'Parent Engagement Programs']:
-                    timeline['immediate'].append({
-                        'action': f"Start {rec['area']} initiative",
-                        'description': rec['recommendation'][:100] + "...",
-                        'priority': rec['priority']
-                    })
-                else:
-                    timeline['short_term'].append({
-                        'action': f"Implement {rec['area']} program",
-                        'description': rec['recommendation'][:100] + "...",
-                        'priority': rec['priority']
-                    })
-            elif rec['priority'] == 'Medium':
-                timeline['medium_term'].append({
-                    'action': f"Launch {rec['area']} initiative",
-                    'description': rec['recommendation'][:100] + "...",
-                    'priority': rec['priority']
-                })
-            else:
-                timeline['long_term'].append({
-                    'action': f"Establish {rec['area']} program",
-                    'description': rec['recommendation'][:100] + "...",
-                    'priority': rec['priority']
-                })
-        
-        return timeline
-    
-    @staticmethod
-    def get_success_metrics(df):
-        """Define success metrics for tracking recommendation effectiveness"""
-        current_stats = {
-            'avg_exam_score': df['Exam_Score'].mean(),
-            'high_performers_pct': (df['Exam_Score'] > 70).mean() * 100,
-            'low_engagement_pct': (df['Engagement_Category'] == 'Low Engagement').mean() * 100,
-            'attendance_rate': df['Attendance'].mean(),
-            'high_involvement_pct': (df['Parental_Involvement'] == 'High').mean() * 100
-        }
-        
-        target_metrics = {
-            'target_avg_score': min(current_stats['avg_exam_score'] + 5, 95),
-            'target_high_performers': min(current_stats['high_performers_pct'] + 15, 40),
-            'target_low_engagement': max(current_stats['low_engagement_pct'] - 10, 10),
-            'target_attendance': min(current_stats['attendance_rate'] + 5, 95),
-            'target_involvement': min(current_stats['high_involvement_pct'] + 20, 50)
-        }
-        
-        return {
-            'current': current_stats,
-            'targets': target_metrics,
-            'tracking_kpis': [
-                'Monthly parent engagement participation rates',
-                'Student academic performance trends',
-                'Attendance improvement rates',
-                'Family satisfaction surveys',
-                'Teacher feedback on parent involvement'
-            ]
-        }
