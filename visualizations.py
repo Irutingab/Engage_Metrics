@@ -3,17 +3,12 @@ import pandas as pd
 import numpy as np
 
 class Visualizations:
-    
     @staticmethod
     def create_donut_chart(df, column, title, colors=None):
-
         value_counts = df[column].value_counts()
-        
         if colors is None:
             colors = plt.cm.Set3(np.linspace(0, 1, len(value_counts)))
-        
         fig, ax = plt.subplots(figsize=(8, 8))
-        
         wedges, texts, autotexts = ax.pie(
             value_counts.values,
             labels=value_counts.index,
@@ -22,23 +17,18 @@ class Visualizations:
             startangle=90,
             wedgeprops=dict(width=0.6)
         )
-        
         for autotext in autotexts:
             autotext.set_color('white')
             autotext.set_fontweight('bold')
-        
         ax.set_title(title, fontsize=16, fontweight='bold', pad=20)
         plt.tight_layout()
         return fig
-    
+
     @staticmethod
     def create_histogram_chart(df, column, title, colors=None, bins=None):
-        
         """Plots a histogram for numerical data or a bar chart for categorical data."""
         fig, ax = plt.subplots(figsize=(10, 6))
-        
         if df[column].dtype == 'object' or pd.api.types.is_categorical_dtype(df[column]):
-            # For categorical data, create a bar chart
             value_counts = df[column].value_counts()
             bars = ax.bar(range(len(value_counts)), value_counts.values, 
                         color=colors[:len(value_counts)] if colors else None)
@@ -46,18 +36,15 @@ class Visualizations:
             ax.set_xticklabels(value_counts.index, rotation=45, ha='right')
             ax.set_ylabel('Count')
             ax.set_xlabel(column)
-            # Add value labels on bars
             for bar, value in zip(bars, value_counts.values):
                 ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5, 
                     str(value), ha='center', va='bottom', fontweight='bold')
         else:
-            # For numerical data, create a histogram
             n, bins, patches = ax.hist(df[column].dropna(), bins=bins or 20, 
                                     color=colors[0] if colors else 'skyblue', 
                                     alpha=0.7, edgecolor='black')
             ax.set_xlabel(column)
             ax.set_ylabel('Frequency')
-        
         ax.set_title(title, fontsize=14, fontweight='bold')
         ax.grid(True, alpha=0.3)
         plt.tight_layout()
@@ -427,38 +414,6 @@ class Visualizations:
         # Add percentage labels on bars
         for container in ax.containers:
             ax.bar_label(container, fmt='%.1f%%', label_type='center')
-        
-        plt.tight_layout()
-        return fig
-    
-    @staticmethod
-    def create_performance_vs_engagement_boxplot(df):
-        """Create boxplot showing exam scores grouped by engagement categories"""
-        fig, ax = plt.subplots(figsize=(12, 8))
-        
-        # Prepare data for boxplot
-        engagement_categories = ['Low Engagement', 'Medium Engagement', 'High Engagement']
-        boxplot_data = [df[df['Engagement_Category'] == cat]['Exam_Score'].dropna() 
-                       for cat in engagement_categories]
-        
-        # Create boxplot
-        bp = ax.boxplot(boxplot_data, labels=engagement_categories, patch_artist=True)
-        
-        # Color the boxes
-        colors = ["#6BFF90", "#76CD4E", "#97D145"]
-        for patch, color in zip(bp['boxes'], colors):
-            patch.set_facecolor(color)
-            patch.set_alpha(0.7)
-        
-        ax.set_title('Student Performance Distribution by Parental Engagement Level', fontsize=16, pad=20)
-        ax.set_xlabel('Parental Engagement Category', fontsize=12)
-        ax.set_ylabel('Exam Score', fontsize=12)
-        ax.grid(True, alpha=0.3)
-        
-        # Add mean markers
-        means = [data.mean() for data in boxplot_data]
-        ax.scatter(range(1, len(means) + 1), means, marker='D', s=80, color='red', zorder=5, label='Mean')
-        ax.legend()
         
         plt.tight_layout()
         return fig
