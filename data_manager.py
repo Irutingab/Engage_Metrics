@@ -77,9 +77,5 @@ class DataManager:
             if self.df is not None:
                 self.df = self.categorize_data(self.df)
         return self.df
-    
-    def apply_filters(self, df, selected_involvement):
-        return df[
-            (df['Parental_Involvement'].isin(selected_involvement))
-        ]
+
 
