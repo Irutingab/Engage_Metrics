@@ -103,6 +103,15 @@ class StudentDashboard:
         else:
             st.info("No specific recommendations generated for this dataset.")
 
+        # Download button at the end of the dashboard
+        st.header("")
+        st.download_button(
+            label="Download Dataset",
+            data=df.to_csv(index=False).encode('utf-8'),
+            file_name='student_performance_export.csv',
+            mime='text/csv',
+        )
+
         # ...existing code...
     def clean_dataframe(self, df):
         """Clean dataframe for analysis"""
