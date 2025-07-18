@@ -15,7 +15,6 @@ class DataManager:
         except FileNotFoundError:
             st.error(f"Dataset '{_self.filename}' not found.")
             return None
-    
     def categorize_data(self, df):
         """Create categories for better visualization"""
         df['Performance_Category'] = pd.cut(df['Exam_Score'], 
