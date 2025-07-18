@@ -7,7 +7,7 @@ class DataManager:
         self.filename = filename
         self.df = None
     
-    @st.cache_data
+    @st.cache_data # Cache the data loading function to improve performance
     def load_data(_self):
         try:
             df = pd.read_csv(_self.filename)
@@ -32,7 +32,6 @@ class DataManager:
         
         # Create Parental Engagement Score
         df = self.create_parental_engagement_score(df)
-        
         return df
     
     def create_parental_engagement_score(self, df):
