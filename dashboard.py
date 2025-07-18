@@ -24,7 +24,6 @@ class StudentDashboard:
         df = self.clean_dataframe(df)
         st.title("Student Performance & Parental Engagement Analysis")
         st.write(f"Total Records: {len(df)}")
-        st.write(f"Features | Columns: {len(df.columns)}")
         insights = self.analytics.get_performance_insights(df)
         st.metric("Total Students", f"{insights['total_students']}")
         st.metric("Average Exam Score", f"{insights['avg_score']:.1f}")
@@ -80,10 +79,6 @@ class StudentDashboard:
         st.subheader("Engagement by Education Level")
         fig12 = self.visualizations.create_engagement_by_education_level(df)
         st.pyplot(fig12)
-
-        st.subheader("Performance vs Engagement Boxplot''")
-        fig13 = self.visualizations.create_performance_vs_engagement_boxplot(df)
-        st.pyplot(fig13)
 
         st.subheader("Engagement Correlation Heatmap")
         fig14 = self.visualizations.create_engagement_correlation_heatmap(df)
