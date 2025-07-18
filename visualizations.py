@@ -51,27 +51,6 @@ class Visualizations:
         return fig
     
     @staticmethod
-    def create_histogram_with_kde(df, column, title, bins=20):
-        """Plots a histogram for a numerical column 
-        and overlays a vertical line for the mean."""
-        fig, ax = plt.subplots(figsize=(10, 6))
-        
-        n, bins, patches = ax.hist(df[column].dropna(), bins=bins, alpha=0.7, 
-                                color='skyblue', edgecolor='black')
-        
-        mean_val = df[column].mean()
-        ax.axvline(mean_val, color='red', linestyle='--', linewidth=2, 
-                label=f'Mean: {mean_val:.1f}')
-        
-        ax.set_title(title, fontsize=14, fontweight='bold')
-        ax.set_xlabel(column)
-        ax.set_ylabel('Frequency')
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        plt.tight_layout()
-        return fig
-    
-    @staticmethod
     def create_correlation_heatmap(df):
         """Plots a heatmap of the correlation matrix for all numeric columns."""
         numeric_cols = df.select_dtypes(include=[np.number]).columns
@@ -110,7 +89,7 @@ class Visualizations:
         mean_scores = mean_scores.reindex(involvement_order)
         
         bars = ax.bar(involvement_order, mean_scores, 
-                    color=["#0D056A", "#484564", "#090D4F"],
+                    color=["#65D5A3", "#496445", "#12B02C"],
                     edgecolor='black', linewidth=1.2)
         
         for bar, value in zip(bars, mean_scores):
@@ -454,24 +433,3 @@ class Visualizations:
         ax.set_title('Parental Engagement Factors Correlation Matrix', fontsize=16, pad=20)
         plt.tight_layout()
         return fig
-    
-    @staticmethod
-    def create_engagement_score_distribution(df):
-        """Create histogram of parental engagement scores"""
-        fig, ax = plt.subplots(figsize=(12, 8))
-        
-        # Create histogram
-        ax.hist(df['Parental_Engagement_Score'], bins=20, color='#4ECDC4', alpha=0.7, edgecolor='black')
-        
-        # Add mean and median lines
-        mean_score = df['Parental_Engagement_Score'].mean()
-        median_score = df['Parental_Engagement_Score'].median()
-        
-        ax.axvline(mean_score, color='red', linestyle='--', linewidth=2, label=f'Mean: {mean_score:.2f}')
-        ax.axvline(median_score, color='blue', linestyle='--', linewidth=2, label=f'Median: {median_score:.2f}')
-        
-        ax.set_title('Distribution of Parental Engagement Scores', fontsize=16, pad=20)
-        ax.set_xlabel('Parental Engagement Score', fontsize=12)
-        ax.set_ylabel('Number of Students', fontsize=12)
-        ax.legend()
-        ax.grid(True, alpha=0.3)
