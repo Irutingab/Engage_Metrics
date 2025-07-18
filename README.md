@@ -54,7 +54,7 @@ The project uses the `StudentPerformanceFactors` dataset, which includes feature
 - **Interactive Dashboard:**  
   The `StudentDashboard` class (run via Streamlit) brings everything together, displaying metrics, visualizations, and recommendations in an easy-to-use web interface.
 
-## How to Run
+## How to Run the application\dashboard
 
 1. **Install Requirements:**  
    Make sure you have Python 3.7+ and install the required packages:
@@ -64,7 +64,7 @@ The project uses the `StudentPerformanceFactors` dataset, which includes feature
 
 2. **Prepare the Dataset:**  
    Place the cleaned dataset file (`StudentPerformanceFactors_cleaned.csv`) in the project directory.  
-   (You can use the notebook to download and clean the original dataset.)
+   (You can use the notebook to download and clean the original dataset, or just download it from the dashhboard where you can find a button that helps download the cleaned csv file used for this analysis.)
 
 3. **Start the Dashboard:**  
    Run the following command in your terminal:
@@ -80,7 +80,7 @@ The project uses the `StudentPerformanceFactors` dataset, which includes feature
 - `data_manager.py` — Data loading, cleaning, and feature engineering.
 - `analytics.py` — Analytical computations and recommendations.
 - `visualizations.py` — All plotting and visualization functions.
-- `EngageMetrics.ipynb` — Jupyter notebook for data exploration and cleaning.
+- `EngageMetrics.ipynb` — Jupyter notebook for data exploration(DE) and cleaning.
 - `README.md` — Project documentation.
 
 ## Example Insights
