@@ -89,13 +89,6 @@ The project uses the `StudentPerformanceFactors` dataset, which includes feature
 - Excellent attendance and more study hours are common traits among top performers.
 - Actionable recommendations are generated, such as improving attendance, supporting study skills, and targeting comprehensive academic support for low-performing groups.
 
-## Customization
-
-You can extend the dashboard by:
-- Adding new visualizations in `visualizations.py`.
-- Modifying or adding analytics in `analytics.py`.
-- Changing data processing logic in `data_manager.py`.
-
 ## License
 
 This project is for educational and research purposes.
