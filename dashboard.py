@@ -13,7 +13,6 @@ class StudentDashboard:
         self.visualizations = Visualizations()
         self.analytics = Analytics()
 
-    # ...existing code...
     def run(self):
         """Main method to run the dashboard with Streamlit UI"""
         st.set_page_config(page_title="Student Performance & Parental Engagement Dashboard", layout="wide")
@@ -23,7 +22,6 @@ class StudentDashboard:
             return
         df = self.clean_dataframe(df)
         st.title("Student Performance & Parental Engagement Analysis")
-        st.write(f"Total Records: {len(df)}")
         insights = self.analytics.get_performance_insights(df)
         st.metric("Total Students", f"{insights['total_students']}")
         st.metric("Average Exam Score", f"{insights['avg_score']:.1f}")
@@ -31,6 +29,7 @@ class StudentDashboard:
         st.metric("High Performers (>70)", f"{insights['high_performers_pct']:.1f}%")
 
         # Add all visualizations
+        
         st.subheader("Parental Involvement Distribution")
         fig1 = self.visualizations.create_donut_chart(df, 'Parental_Involvement', 'Parental Involvement Distribution')
         st.pyplot(fig1)
@@ -64,10 +63,6 @@ class StudentDashboard:
         fig8 = self.visualizations.create_box_plot_scores_by_education(df)
         st.pyplot(fig8)
 
-        st.subheader("Parental Involvement Analysis")
-        fig9 = self.visualizations.create_parental_involvement_analysis(df)
-        st.pyplot(fig9)
-
         st.subheader("Parental Involvement Heatmap")
         fig10 = self.visualizations.create_parental_involvement_heatmap(df)
         st.pyplot(fig10)
@@ -75,10 +70,6 @@ class StudentDashboard:
         st.subheader("Engagement Score Scatter")
         fig11 = self.visualizations.create_engagement_score_scatter(df)
         st.pyplot(fig11)
-
-        st.subheader("Engagement by Education Level")
-        fig12 = self.visualizations.create_engagement_by_education_level(df)
-        st.pyplot(fig12)
 
         st.subheader("Engagement Correlation Heatmap")
         fig14 = self.visualizations.create_engagement_correlation_heatmap(df)
@@ -111,8 +102,6 @@ class StudentDashboard:
             file_name='student_performance_export.csv',
             mime='text/csv',
         )
-
-        # ...existing code...
     def clean_dataframe(self, df):
         """Clean dataframe for analysis"""
         df_clean = df.copy()
