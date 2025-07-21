@@ -233,59 +233,6 @@ class Visualizations:
         return fig
     
     @staticmethod
-    def create_parental_involvement_analysis(df):
-        """Create detailed analysis of parental involvement impact"""
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
-        
-        involvement_order = ['Low', 'Medium', 'High']
-        df_ordered = df[df['Parental_Involvement'].isin(involvement_order)]
-        
-        box_data = [df_ordered[df_ordered['Parental_Involvement'] == level]['Exam_Score'].values 
-                    for level in involvement_order]
-        
-        ax1.boxplot(box_data, labels=involvement_order)
-        ax1.set_title('Exam Scores by Parental Involvement Level', fontweight='bold')
-        ax1.set_xlabel('Parental Involvement Level')
-        ax1.set_ylabel('Exam Score')
-        ax1.grid(True, alpha=0.3)
-        
-        mean_scores = df.groupby('Parental_Involvement')['Exam_Score'].mean().reindex(involvement_order)
-        bars = ax2.bar(involvement_order, mean_scores, color=["#2BA486", "#409437", "#289593"])
-        ax2.set_title('Average Exam Scores by Parental Involvement', fontweight='bold')
-        ax2.set_xlabel('Parental Involvement Level')
-        ax2.set_ylabel('Average Exam Score')
-        
-        for bar, value in zip(bars, mean_scores):
-            ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5, 
-                    f'{value:.1f}', ha='center', va='bottom', fontweight='bold')
-        
-        performance_by_involvement = pd.crosstab(df['Parental_Involvement'], df['Performance_Category'], normalize='index') * 100
-        performance_by_involvement.plot(kind='bar', ax=ax3, stacked=True, 
-                                    color=["#278B79", "#079F16", "#ABDE97", "#419A41", "#04B45C"])
-        ax3.set_title('Performance Distribution by Parental Involvement (%)', fontweight='bold')
-        ax3.set_xlabel('Parental Involvement Level')
-        ax3.set_ylabel('Percentage')
-        ax3.legend(title='Performance Grade', bbox_to_anchor=(1.05, 1), loc='upper left')
-        ax3.tick_params(axis='x', rotation=45)
-        
-        involvement_numeric = df['Parental_Involvement'].map({'Low': 1, 'Medium': 2, 'High': 3})
-        ax4.scatter(involvement_numeric, df['Exam_Score'], alpha=0.6, color="#116274")
-        
-        z = np.polyfit(involvement_numeric, df['Exam_Score'], 1)
-        p = np.poly1d(z)
-        ax4.plot([1, 2, 3], p([1, 2, 3]), "r--", alpha=0.8, linewidth=2)
-        
-        ax4.set_title('Exam Score vs Parental Involvement (with trend)', fontweight='bold')
-        ax4.set_xlabel('Parental Involvement Level\n(1=Low, 2=Medium, 3=High)')
-        ax4.set_ylabel('Exam Score')
-        ax4.set_xticks([1, 2, 3])
-        ax4.set_xticklabels(['Low', 'Medium', 'High'])
-        ax4.grid(True, alpha=0.3)
-        
-        plt.tight_layout()
-        return fig
-    
-    @staticmethod
 
     def create_parental_involvement_heatmap(df):
         """Create a focused heatmap showing the relationship between parental involvement and student performance metrics."""
@@ -363,39 +310,6 @@ class Visualizations:
         plt.tight_layout()
         return fig
     
-    @staticmethod
-    def create_engagement_by_education_level(df):
-        """Create stacked bar chart of engagement levels by parental education"""
-        fig, ax = plt.subplots(figsize=(12, 8))
-        
-        # Create crosstab for stacked bar
-        engagement_education = pd.crosstab(df['Parental_Education_Level'], 
-                                         df['Parental_Involvement'], 
-                                         normalize='index') * 100
-        
-        # Ensure proper order
-        education_order = ['High School', 'College', 'Postgraduate']
-        involvement_order = ['Low', 'Medium', 'High']
-        
-        engagement_education = engagement_education.reindex(education_order)
-        engagement_education = engagement_education.reindex(columns=involvement_order)
-        
-        # Create stacked bar chart
-        engagement_education.plot(kind='bar', stacked=True, ax=ax, 
-                                color=["#6BFFA9", "#5DCD4E", "#45D17F"])
-        
-        ax.set_title('Parental Involvement Distribution by Education Level', fontsize=16, pad=20)
-        ax.set_xlabel('Parental Education Level', fontsize=12)
-        ax.set_ylabel('Percentage of Students (%)', fontsize=12)
-        ax.legend(title='Parental Involvement', title_fontsize=12)
-        ax.set_xticklabels(education_order, rotation=45, ha='right')
-        
-        # Add percentage labels on bars
-        for container in ax.containers:
-            ax.bar_label(container, fmt='%.1f%%', label_type='center')
-        
-        plt.tight_layout()
-        return fig
     
     @staticmethod
     def create_engagement_correlation_heatmap(df):
@@ -431,5 +345,31 @@ class Visualizations:
                        color=text_color, fontweight='bold', fontsize=10)
         
         ax.set_title('Parental Engagement Factors Correlation Matrix', fontsize=16, pad=20)
+        plt.tight_layout()
+        return fig
+
+    @staticmethod
+    def create_bar_chart_scores_by_engagement(df):
+        """Create bar chart showing average exam scores by parental engagement category (Low, Medium, High Engagement)"""
+        fig, ax = plt.subplots(figsize=(10, 6))
+        
+        engagement_order = ['Low Engagement', 'Medium Engagement', 'High Engagement']
+        mean_scores = df.groupby('Engagement_Category')['Exam_Score'].mean()
+        mean_scores = mean_scores.reindex(engagement_order)
+        
+        bars = ax.bar(engagement_order, mean_scores, 
+                    color=["#A3C9A8", "#5FAD56", "#1B512D"],
+                    edgecolor='black', linewidth=1.2)
+        
+        for bar, value in zip(bars, mean_scores):
+            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5, 
+                    f'{value:.1f}', ha='center', va='bottom', fontweight='bold', fontsize=12)
+        
+        ax.set_title('Average Exam Scores by Parental Engagement Category', fontsize=16, fontweight='bold', pad=20)
+        ax.set_xlabel('Parental Engagement Category', fontsize=12)
+        ax.set_ylabel('Average Exam Score', fontsize=12)
+        ax.grid(True, alpha=0.3, axis='y')
+        ax.set_ylim(0, max(mean_scores) * 1.1)
+                
         plt.tight_layout()
         return fig
