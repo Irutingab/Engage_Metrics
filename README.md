@@ -78,7 +78,7 @@ The project uses the `StudentPerformanceFactors` dataset, which includes feature
 - `main.py` — Entry point; launches the Streamlit dashboard.
 - `dashboard.py` — Dashboard logic and UI.
 - `data_manager.py` — Data loading, cleaning, and feature engineering.
-- `analytics.py` — Analytical computations and recommendations.
+- `analytics.py` — Analytical computations
 - `visualizations.py` — All plotting and visualization functions.
 - `EngageMetrics.ipynb` — Jupyter notebook for data exploration(DE) and cleaning.
 - `README.md` — Project documentation.
