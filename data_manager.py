@@ -21,7 +21,10 @@ class DataManager:
 
     def categorize_data(self, df):
         """Create categories for better visualization"""
-        df['Performance_Category'] = pd.cut(df['Exam_Score'], 
+        # Calculate average score
+        df['Average_Score'] = df[['math score', 'reading score', 'writing score']].mean(axis=1)
+
+        df['Performance_Category'] = pd.cut(df['Average_Score'], 
                                         bins=[0, 60, 70, 80, 90, 100], 
                                         labels=['F (0-59)', 'D (60-69)', 'C (70-79)', 'B (80-89)', 'A (90-100)'])
         df['Attendance_Category'] = pd.cut(df['Attendance'], 
@@ -40,16 +43,16 @@ class DataManager:
         """Create a comprehensive Parental Engagement Score combining multiple indicators"""
         
         # Map parental involvement to numeric values
-        involvement_scores = {'Low': 1, 'Medium': 2, 'High': 3}
-        df['Involvement_Score'] = df['Parental_Involvement'].map(involvement_scores)
+        involvement_scores = {'some high school': 1, 'high school': 2, 'some college': 3, "associate's degree": 4, "bachelor's degree": 5, "master's degree": 6}
+        df['Involvement_Score'] = df['parental level of education'].map(involvement_scores)
         
         # Map parental education to numeric values
-        education_scores = {'High School': 1, 'College': 2, 'Postgraduate': 3}
-        df['Education_Score'] = df['Parental_Education_Level'].map(education_scores)
+        education_scores = {'some high school': 1, 'high school': 2, 'some college': 3, "associate's degree": 4, "bachelor's degree": 5, "master's degree": 6}
+        df['Education_Score'] = df['parental level of education'].map(education_scores)
         
-        # Map family income to numeric values
-        income_scores = {'Low': 1, 'Medium': 2, 'High': 3}
-        df['Income_Score'] = df['Family_Income'].map(income_scores)
+        # Map family income to numeric values (assuming 'lunch' is a proxy for income)
+        income_scores = {'standard': 2, 'free/reduced': 1}
+        df['Income_Score'] = df['lunch'].map(income_scores)
         
         # Calculate weighted engagement score (involvement weighted more heavily)
         df['Parental_Engagement_Score'] = (
@@ -60,7 +63,7 @@ class DataManager:
         
         # Create engagement categories (handle NaN values first)
         df['Engagement_Category'] = pd.cut(df['Parental_Engagement_Score'], 
-                                         bins=[0, 1.5, 2.5, 3], 
+                                         bins=[0, 2, 4, 6], 
                                          labels=['Low Engagement', 'Medium Engagement', 'High Engagement'])
         
         # Handle any NaN values in categorical columns

@@ -87,12 +87,12 @@ class Visualizations:
         """Create bar chart showing average exam scores by parental involvement"""
         fig, ax = plt.subplots(figsize=(10, 6))
         
-        involvement_order = ['Low', 'Medium', 'High']
-        mean_scores = df.groupby('Parental_Involvement')['Exam_Score'].mean()
+        involvement_order = ['some high school', 'high school', 'some college', "associate's degree", "bachelor's degree", "master's degree"]
+        mean_scores = df.groupby('parental level of education')['Average_Score'].mean()
         mean_scores = mean_scores.reindex(involvement_order)
         
         bars = ax.bar(involvement_order, mean_scores, 
-                    color=["#65D5A3", "#496445", "#12B02C"],
+                    color=["#65D5A3", "#496445", "#12B02C", "#A3C9A8", "#5FAD56", "#1B512D"],
                     edgecolor='black', linewidth=1.2)
         
         for bar, value in zip(bars, mean_scores):
@@ -115,12 +115,12 @@ class Visualizations:
         
         # Create score categories
         df_temp = df.copy()
-        df_temp['Score_Category'] = pd.cut(df_temp['Exam_Score'], 
+        df_temp['Score_Category'] = pd.cut(df_temp['Average_Score'], 
                                          bins=[0, 60, 70, 80, 90, 100], 
                                          labels=['Poor (0-60)', 'Fair (60-70)', 'Good (70-80)', 'Very Good (80-90)', 'Excellent (90-100)'])
         
         # Education Level - High School
-        hs_data = df_temp[df_temp['Parental_Education_Level'] == 'High School']['Score_Category'].value_counts()
+        hs_data = df_temp[df_temp['parental level of education'] == 'high school']['Score_Category'].value_counts()
         colors_hs = ["#008B48", "#99FF00", "#FFD700", "#32CD32", "#006400"]
         
         if not hs_data.empty:
@@ -142,7 +142,7 @@ class Visualizations:
         ax1.set_title('High School Education\nScore Distribution', fontsize=12, fontweight='bold', pad=20)
         
         # Education Level - College
-        college_data = df_temp[df_temp['Parental_Education_Level'] == 'College']['Score_Category'].value_counts()
+        college_data = df_temp[df_temp['parental level of education'] == 'some college']['Score_Category'].value_counts()
         
         if not college_data.empty:
             wedges2, texts2, autotexts2 = ax2.pie(college_data.values, labels=None,
@@ -163,7 +163,7 @@ class Visualizations:
         ax2.set_title('College Education\nScore Distribution', fontsize=12, fontweight='bold', pad=20)
         
         # Income Level - Low
-        low_income_data = df_temp[df_temp['Family_Income'] == 'Low']['Score_Category'].value_counts()
+        low_income_data = df_temp[df_temp['lunch'] == 'free/reduced']['Score_Category'].value_counts()
         colors_income = ["#549B63", "#1F642B", "#70DBC9", "#049D46", "#98E898"]
         
         if not low_income_data.empty:
@@ -185,7 +185,7 @@ class Visualizations:
         ax3.set_title('Low Income\nScore Distribution', fontsize=12, fontweight='bold', pad=20)
         
         # Income Level - High
-        high_income_data = df_temp[df_temp['Family_Income'] == 'High']['Score_Category'].value_counts()
+        high_income_data = df_temp[df_temp['lunch'] == 'standard']['Score_Category'].value_counts()
         
         if not high_income_data.empty:
             wedges4, texts4, autotexts4 = ax4.pie(high_income_data.values, labels=None,
@@ -219,13 +219,13 @@ class Visualizations:
         # Create score ranges
         score_bins = [0, 60, 70, 80, 90, 100]
         score_labels = ['Below 60', '60-69', '70-79', '80-89', '90-100']
-        df_copy['Score_Range'] = pd.cut(df_copy['Exam_Score'], bins=score_bins, labels=score_labels, include_lowest=True)
+        df_copy['Score_Range'] = pd.cut(df_copy['Average_Score'], bins=score_bins, labels=score_labels, include_lowest=True)
         
         # Create pivot table for heatmap
-        heatmap_data = pd.crosstab(df_copy['Parental_Involvement'], df_copy['Score_Range'], normalize='index') * 100
+        heatmap_data = pd.crosstab(df_copy['parental level of education'], df_copy['Score_Range'], normalize='index') * 100
         
         # Ensure proper order
-        involvement_order = ['Low', 'Medium', 'High']
+        involvement_order = ['some high school', 'high school', 'some college', "associate's degree", "bachelor's degree", "master's degree"]
         heatmap_data = heatmap_data.reindex(involvement_order)
         
         fig, ax = plt.subplots(figsize=(12, 6))
@@ -262,7 +262,7 @@ class Visualizations:
     def create_engagement_correlation_heatmap(df):
         """Create correlation heatmap focused on engagement factors"""
         engagement_cols = ['Parental_Engagement_Score', 'Involvement_Score', 'Education_Score', 
-                          'Income_Score', 'Exam_Score', 'Attendance', 'Hours_Studied']
+                          'Income_Score', 'Average_Score', 'Attendance', 'Hours_Studied']
         
         # Select only engagement-related columns
         engagement_df = df[engagement_cols].select_dtypes(include=[np.number])
