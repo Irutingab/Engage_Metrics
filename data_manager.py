@@ -3,28 +3,24 @@ import streamlit as st
 
 class DataManager:
     
-    def __init__(self):
-        # IMPORTANT: This is a public URL for the dataset
-        self.data_url = "https://raw.githubusercontent.com/Poojanarkhede22/Student_Performance_data/master/StudentsPerformance.csv"
+    def __init__(self, filename="student_performance_cleaned.csv"):
+        self.filename = filename
         self.df = None
     
     @staticmethod
-    @st.cache_data # Cache the data loading function to improve performance
-    def load_data(url):
-        """Loads data from a URL and caches it."""
+    @st.cache_data
+    def load_data(filename):
+        """Loads data from a local CSV file."""
         try:
-            df = pd.read_csv(url)
+            df = pd.read_csv(filename)
             return df
-        except Exception as e:
-            st.error(f"Error loading data from URL: {e}")
+        except FileNotFoundError:
+            st.error(f"Error: The data file '{filename}' was not found. Please make sure it's in the same directory as the app.")
             return None
 
     def categorize_data(self, df):
         """Create categories for better visualization"""
-        # Calculate average score
-        df['Average_Score'] = df[['math score', 'reading score', 'writing score']].mean(axis=1)
-
-        df['Performance_Category'] = pd.cut(df['Average_Score'], 
+        df['Performance_Category'] = pd.cut(df['Exam_Score'], 
                                         bins=[0, 60, 70, 80, 90, 100], 
                                         labels=['F (0-59)', 'D (60-69)', 'C (70-79)', 'B (80-89)', 'A (90-100)'])
         df['Attendance_Category'] = pd.cut(df['Attendance'], 
@@ -33,52 +29,41 @@ class DataManager:
         df['Study_Hours_Category'] = pd.cut(df['Hours_Studied'], 
                                         bins=[0, 10, 20, 50], 
                                         labels=['Low (≤10h)', 'Medium (11-20h)', 'High (>20h)'])
-        # Create Parental Engagement Score
         df = self.create_parental_engagement_score(df)
-        # Optionally, create a histogram column for Attendance vs Exam Score
-        # This is just a placeholder for your dashboard to use create_histogram_chart
         return df
     
     def create_parental_engagement_score(self, df):
         """Create a comprehensive Parental Engagement Score combining multiple indicators"""
+        # This section will also likely need to be updated.
+        involvement_scores = {'Low': 1, 'Medium': 2, 'High': 3}
+        df['Involvement_Score'] = df['Parental_Involvement'].map(involvement_scores)
         
-        # Map parental involvement to numeric values
-        involvement_scores = {'some high school': 1, 'high school': 2, 'some college': 3, "associate's degree": 4, "bachelor's degree": 5, "master's degree": 6}
-        df['Involvement_Score'] = df['parental level of education'].map(involvement_scores)
+        education_scores = {'High School': 1, 'College': 2, 'Postgraduate': 3}
+        df['Education_Score'] = df['Parental_Education_Level'].map(education_scores)
         
-        # Map parental education to numeric values
-        education_scores = {'some high school': 1, 'high school': 2, 'some college': 3, "associate's degree": 4, "bachelor's degree": 5, "master's degree": 6}
-        df['Education_Score'] = df['parental level of education'].map(education_scores)
+        income_scores = {'Low': 1, 'Medium': 2, 'High': 3}
+        df['Income_Score'] = df['Family_Income'].map(income_scores)
         
-        # Map family income to numeric values (assuming 'lunch' is a proxy for income)
-        income_scores = {'standard': 2, 'free/reduced': 1}
-        df['Income_Score'] = df['lunch'].map(income_scores)
-        
-        # Calculate weighted engagement score (involvement weighted more heavily)
         df['Parental_Engagement_Score'] = (
-            df['Involvement_Score'] * 0.5 +  # 50% weight for direct involvement
-            df['Education_Score'] * 0.3 +    # 30% weight for education level
-            df['Income_Score'] * 0.2          # 20% weight for family income
+            df['Involvement_Score'] * 0.5 +
+            df['Education_Score'] * 0.3 +
+            df['Income_Score'] * 0.2
         )
         
-        # Create engagement categories (handle NaN values first)
         df['Engagement_Category'] = pd.cut(df['Parental_Engagement_Score'], 
-                                         bins=[0, 2, 4, 6], 
+                                         bins=[0, 1.5, 2.5, 3], 
                                          labels=['Low Engagement', 'Medium Engagement', 'High Engagement'])
         
-        # Handle any NaN values in categorical columns
         categorical_columns = ['Performance_Category', 'Attendance_Category', 'Study_Hours_Category', 'Engagement_Category']
         for col in categorical_columns:
-            if col in df.columns:
-                # Add 'Unknown' as a category if there are NaN values
-                if df[col].isna().any():
-                    df[col] = df[col].cat.add_categories(['Unknown']).fillna('Unknown')
+            if col in df.columns and df[col].isna().any():
+                df[col] = df[col].cat.add_categories(['Unknown']).fillna('Unknown')
         
         return df
     
     def get_processed_data(self):
         if self.df is None:
-            self.df = self.load_data(self.data_url)
+            self.df = self.load_data(self.filename)
             if self.df is not None:
                 self.df = self.categorize_data(self.df)
         return self.df

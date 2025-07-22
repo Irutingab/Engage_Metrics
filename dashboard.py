@@ -31,7 +31,7 @@ class StudentDashboard:
         # Add all visualizations
         
         st.subheader("Parental Involvement Distribution")
-        fig1 = self.visualizations.create_donut_chart(df, 'parental level of education', 'Parental Involvement Distribution')
+        fig1 = self.visualizations.create_donut_chart(df, 'Parental_Involvement', 'Parental Involvement Distribution')
         st.pyplot(fig1)
         st.markdown("""
 **What this shows:**  
@@ -67,7 +67,7 @@ Improving attendance rates should be a priority for boosting performance.
 """)
 
         st.subheader("Distribution of Exam Scores")
-        fig4 = self.visualizations.create_histogram_chart(df, 'Average_Score', 'Distribution of Exam Scores')
+        fig4 = self.visualizations.create_histogram_chart(df, 'Exam_Score', 'Distribution of Exam Scores')
         st.pyplot(fig4)
         st.markdown("""
 **What this shows:**  
