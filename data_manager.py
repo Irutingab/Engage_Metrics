@@ -3,30 +3,22 @@ import streamlit as st
 
 class DataManager:
     
-    def __init__(self, filename="StudentPerformanceFactors_cleaned.csv"):
-        self.filename = filename
+    def __init__(self):
+        # IMPORTANT: Replace this with the raw URL of your CSV file on GitHub
+        self.data_url = "https://raw.githubusercontent.com/Codewith-Perle/Engage_Metrics/main/StudentPerformanceFactors_cleaned.csv"
         self.df = None
     
     @staticmethod
     @st.cache_data # Cache the data loading function to improve performance
-    def load_data(filename="StudentPerformanceFactors_cleaned.csv"):
+    def load_data(url):
+        """Loads data from a URL and caches it."""
         try:
-            df = pd.read_csv(filename)
+            df = pd.read_csv(url)
             return df
-        except FileNotFoundError:
-            # Try fallback filename
-            fallback = "student_performance_cleaned.csv"
-            if filename != fallback:
-                try:
-                    df = pd.read_csv(fallback)
-                    st.warning(f"Dataset '{filename}' not found. Loaded fallback '{fallback}'.")
-                    return df
-                except FileNotFoundError:
-                    st.error(f"Neither '{filename}' nor fallback '{fallback}' found.")
-                    return None
-            else:
-                st.error(f"Dataset '{filename}' not found.")
-                return None
+        except Exception as e:
+            st.error(f"Error loading data from URL: {e}")
+            return None
+
     def categorize_data(self, df):
         """Create categories for better visualization"""
         df['Performance_Category'] = pd.cut(df['Exam_Score'], 
@@ -83,7 +75,7 @@ class DataManager:
     
     def get_processed_data(self):
         if self.df is None:
-            self.df = self.load_data(self.filename)
+            self.df = self.load_data(self.data_url)
             if self.df is not None:
                 self.df = self.categorize_data(self.df)
         return self.df
