@@ -15,7 +15,7 @@ class DataManager:
             df = pd.read_csv(filename)
             return df
         except FileNotFoundError:
-            st.error(f"Error: The data file '{filename}' was not found. Please make sure it's in the same directory as the app.")
+            st.error(f"Error: The data file '{filename}' was not found.")
             return None
 
     def categorize_data(self, df):
@@ -34,7 +34,8 @@ class DataManager:
     
     def create_parental_engagement_score(self, df):
         """Create a comprehensive Parental Engagement Score combining multiple indicators"""
-        # This section will also likely need to be updated.
+        
+        
         involvement_scores = {'Low': 1, 'Medium': 2, 'High': 3}
         df['Involvement_Score'] = df['Parental_Involvement'].map(involvement_scores)
         

@@ -24,9 +24,6 @@ class StudentDashboard:
         st.title("Student Performance & Parental Engagement Analysis")
         insights = self.analytics.get_performance_insights(df)
         st.metric("Total Students", f"{insights['total_students']}")
-        st.metric("Average Exam Score", f"{insights['avg_score']:.1f}")
-        st.metric("Average Attendance", f"{insights['avg_attendance']:.1f}%")
-        st.metric("High Performers (>70)", f"{insights['high_performers_pct']:.1f}%")
 
         # Add all visualizations
         
