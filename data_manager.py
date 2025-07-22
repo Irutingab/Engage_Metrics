@@ -4,8 +4,8 @@ import streamlit as st
 class DataManager:
     
     def __init__(self):
-        # IMPORTANT: Replace this with the raw URL of your CSV file on GitHub
-        self.data_url = "https://raw.githubusercontent.com/Codewith-Perle/Engage_Metrics/main/StudentPerformanceFactors_cleaned.csv"
+        # IMPORTANT: This is a public URL for the dataset
+        self.data_url = "https://raw.githubusercontent.com/Poojanarkhede22/Student_Performance_data/master/StudentsPerformance.csv"
         self.df = None
     
     @staticmethod
