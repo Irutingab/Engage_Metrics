@@ -3,20 +3,6 @@ import numpy as np
 
 class Analytics:
     @staticmethod
-    def analyze_parental_involvement_correlation(df):
-        """Analyze correlation between parental involvement and student performance"""
-        involvement_mapping = {'Low': 1, 'Medium': 2, 'High': 3}
-        df_analysis = df.copy()
-        df_analysis['Parental_Involvement_Numeric'] = df_analysis['Parental_Involvement'].map(involvement_mapping)
-        correlation = df_analysis['Parental_Involvement_Numeric'].corr(df_analysis['Exam_Score'])
-        n = len(df_analysis)
-        if n > 30:
-            p_value = 0.001 if abs(correlation) > 0.3 else 0.05 if abs(correlation) > 0.2 else 0.1
-        else:
-            p_value = 0.01 if abs(correlation) > 0.5 else 0.1
-        return correlation, p_value
-
-    @staticmethod
     def get_performance_insights(df):
         insights = {}
         insights['total_students'] = len(df)
@@ -43,35 +29,6 @@ class Analytics:
                 'High Study Hours': (high_performers['Hours_Studied'] > 20).mean() * 100
             }
         return insights
-
-    @staticmethod
-    def get_plot_explanations(df):
-        explanations = {}
-        counts = df['Parental_Involvement'].value_counts()
-        explanations['Parental Involvement Distribution'] = (
-            f"This donut chart shows the proportion of students with Low, Medium, and High parental involvement. "
-            f"High involvement: {counts.get('High',0)} students ({(counts.get('High',0)/len(df)*100):.1f}%). "
-            f"Low involvement: {counts.get('Low',0)} students ({(counts.get('Low',0)/len(df)*100):.1f}%). "
-            "Higher parental involvement is associated with better student outcomes."
-        )
-        perf_counts = df['Performance_Category'].value_counts()
-        explanations['Academic Performance Distribution'] = (
-            f"This bar chart shows the distribution of student grades. Most students fall in the following categories: "
-            + ", ".join([f"{cat}: {count}" for cat, count in perf_counts.items()]) + ". "
-            "A higher proportion of A/B grades is a positive sign."
-        )
-        att_counts = df['Attendance_Category'].value_counts()
-        explanations['Attendance Level Distribution'] = (
-            f"This bar chart shows attendance levels. Excellent attendance: {att_counts.get('Excellent (>85%)',0)} students. "
-            f"Poor attendance: {att_counts.get('Poor (≤70%)',0)} students. "
-            "Students with excellent attendance tend to perform better."
-        )
-        mean_score = df['Exam_Score'].mean()
-        explanations['Distribution of Exam Scores'] = (
-            f"This histogram shows the spread of exam scores. The average score is {mean_score:.1f}. "
-            "A right-skewed distribution indicates more high performers."
-        )
-        return explanations
 
     @staticmethod
     def get_engagement_recommendations(df):

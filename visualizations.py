@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
+
 class Visualizations:
     @staticmethod
     def create_donut_chart(df, column, title, colors=None):
@@ -102,32 +103,6 @@ class Visualizations:
         ax.grid(True, alpha=0.3, axis='y')
         ax.set_ylim(0, max(mean_scores) * 1.1)
                 
-        plt.tight_layout()
-        return fig
-    
-    @staticmethod
-    def create_scatter_attendance_vs_scores(df):
-        """Create scatter plot of Attendance vs Exam_Score colored by Parental_Involvement"""
-        fig, ax = plt.subplots(figsize=(12, 8))
-        
-        colors = {'Low': "#18461D", 'Medium': "#61DEBF", 'High': "#1EB869"}
-        
-        for involvement in ['Low', 'Medium', 'High']:
-            subset = df[df['Parental_Involvement'] == involvement]
-            ax.scatter(subset['Attendance'], subset['Exam_Score'], 
-                    c=colors[involvement], label=f'{involvement} Involvement',
-                    alpha=0.7, s=50, edgecolors='black', linewidth=0.5)
-        
-        z = np.polyfit(df['Attendance'], df['Exam_Score'], 1)
-        p = np.poly1d(z)
-        ax.plot(df['Attendance'], p(df['Attendance']), "r--", alpha=0.8, linewidth=2, label='Trend Line')
-        
-        ax.set_title('Attendance vs Exam Score (by Parental Involvement)', fontsize=16, fontweight='bold', pad=20)
-        ax.set_xlabel('Attendance (%)', fontsize=12)
-        ax.set_ylabel('Exam Score', fontsize=12)
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        
         plt.tight_layout()
         return fig
     
@@ -282,36 +257,6 @@ class Visualizations:
         return fig
     
     @staticmethod
-    def create_engagement_score_scatter(df):
-        """Create scatter plot of engagement score vs exam scores"""
-        fig, ax = plt.subplots(figsize=(12, 8))
-        
-        # Create scatter plot with different colors for different involvement levels
-        involvement_colors = {'Low': "#6BFFA6", 'Medium': "#4ECD7D", 'High': "#97D145"}
-        
-        for involvement in ['Low', 'Medium', 'High']:
-            mask = df['Parental_Involvement'] == involvement
-            ax.scatter(df[mask]['Parental_Engagement_Score'], df[mask]['Exam_Score'], 
-                      c=involvement_colors[involvement], label=f'{involvement} Involvement', 
-                      alpha=0.6, s=50)
-        
-        # Add trend line
-        z = np.polyfit(df['Parental_Engagement_Score'], df['Exam_Score'], 1)
-        p = np.poly1d(z)
-        ax.plot(df['Parental_Engagement_Score'], p(df['Parental_Engagement_Score']), 
-                "r--", alpha=0.8, linewidth=2, label='Trend Line')
-        
-        ax.set_xlabel('Parental Engagement Score', fontsize=12)
-        ax.set_ylabel('Exam Score', fontsize=12)
-        ax.set_title('Parental Engagement Score vs Student Performance', fontsize=16, pad=20)
-        ax.legend()
-        ax.grid(True, alpha=0.3)
-        
-        plt.tight_layout()
-        return fig
-    
-    
-    @staticmethod
     def create_engagement_correlation_heatmap(df):
         """Create correlation heatmap focused on engagement factors"""
         engagement_cols = ['Parental_Engagement_Score', 'Involvement_Score', 'Education_Score', 
@@ -345,31 +290,5 @@ class Visualizations:
                        color=text_color, fontweight='bold', fontsize=10)
         
         ax.set_title('Parental Engagement Factors Correlation Matrix', fontsize=16, pad=20)
-        plt.tight_layout()
-        return fig
-
-    @staticmethod
-    def create_bar_chart_scores_by_engagement(df):
-        """Create bar chart showing average exam scores by parental engagement category (Low, Medium, High Engagement)"""
-        fig, ax = plt.subplots(figsize=(10, 6))
-        
-        engagement_order = ['Low Engagement', 'Medium Engagement', 'High Engagement']
-        mean_scores = df.groupby('Engagement_Category')['Exam_Score'].mean()
-        mean_scores = mean_scores.reindex(engagement_order)
-        
-        bars = ax.bar(engagement_order, mean_scores, 
-                    color=["#A3C9A8", "#5FAD56", "#1B512D"],
-                    edgecolor='black', linewidth=1.2)
-        
-        for bar, value in zip(bars, mean_scores):
-            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5, 
-                    f'{value:.1f}', ha='center', va='bottom', fontweight='bold', fontsize=12)
-        
-        ax.set_title('Average Exam Scores by Parental Engagement Category', fontsize=16, fontweight='bold', pad=20)
-        ax.set_xlabel('Parental Engagement Category', fontsize=12)
-        ax.set_ylabel('Average Exam Score', fontsize=12)
-        ax.grid(True, alpha=0.3, axis='y')
-        ax.set_ylim(0, max(mean_scores) * 1.1)
-                
         plt.tight_layout()
         return fig

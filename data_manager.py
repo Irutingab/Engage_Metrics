@@ -7,30 +7,41 @@ class DataManager:
         self.filename = filename
         self.df = None
     
+    @staticmethod
     @st.cache_data # Cache the data loading function to improve performance
-    def load_data(_self):
+    def load_data(filename="StudentPerformanceFactors_cleaned.csv"):
         try:
-            df = pd.read_csv(_self.filename)
+            df = pd.read_csv(filename)
             return df
         except FileNotFoundError:
-            st.error(f"Dataset '{_self.filename}' not found.")
-            return None
+            # Try fallback filename
+            fallback = "student_performance_cleaned.csv"
+            if filename != fallback:
+                try:
+                    df = pd.read_csv(fallback)
+                    st.warning(f"Dataset '{filename}' not found. Loaded fallback '{fallback}'.")
+                    return df
+                except FileNotFoundError:
+                    st.error(f"Neither '{filename}' nor fallback '{fallback}' found.")
+                    return None
+            else:
+                st.error(f"Dataset '{filename}' not found.")
+                return None
     def categorize_data(self, df):
         """Create categories for better visualization"""
         df['Performance_Category'] = pd.cut(df['Exam_Score'], 
                                         bins=[0, 60, 70, 80, 90, 100], 
                                         labels=['F (0-59)', 'D (60-69)', 'C (70-79)', 'B (80-89)', 'A (90-100)'])
-        
         df['Attendance_Category'] = pd.cut(df['Attendance'], 
                                         bins=[0, 70, 85, 100], 
                                         labels=['Poor (≤70%)', 'Good (71-85%)', 'Excellent (>85%)'])
-        
         df['Study_Hours_Category'] = pd.cut(df['Hours_Studied'], 
                                         bins=[0, 10, 20, 50], 
                                         labels=['Low (≤10h)', 'Medium (11-20h)', 'High (>20h)'])
-        
         # Create Parental Engagement Score
         df = self.create_parental_engagement_score(df)
+        # Optionally, create a histogram column for Attendance vs Exam Score
+        # This is just a placeholder for your dashboard to use create_histogram_chart
         return df
     
     def create_parental_engagement_score(self, df):
@@ -72,9 +83,11 @@ class DataManager:
     
     def get_processed_data(self):
         if self.df is None:
-            self.df = self.load_data()
+            self.df = self.load_data(self.filename)
             if self.df is not None:
                 self.df = self.categorize_data(self.df)
         return self.df
+
+
 
 
