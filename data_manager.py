@@ -8,14 +8,14 @@ class DataManager:
         self.df = None
     
     @staticmethod
-    @st.cache_data
+    @st.cache_data # load the csv data # Cache the data loading function to improve performance
     def load_data(filename):
         """Loads data from a local CSV file."""
         try:
             df = pd.read_csv(filename)
             return df
         except FileNotFoundError:
-            st.error(f"Error: The data file '{filename}' was not found.")
+            st.error(f"Error: The dataset '{filename}' was not found.")
             return None
 
     def categorize_data(self, df):
@@ -33,33 +33,21 @@ class DataManager:
         return df
     
     def create_parental_engagement_score(self, df):
-        """Create a comprehensive Parental Engagement Score combining multiple indicators"""
-        
-        
+        """Map involvement, education, and income to numeric columns only"""
         involvement_scores = {'Low': 1, 'Medium': 2, 'High': 3}
         df['Involvement_Score'] = df['Parental_Involvement'].map(involvement_scores)
-        
+
         education_scores = {'High School': 1, 'College': 2, 'Postgraduate': 3}
         df['Education_Score'] = df['Parental_Education_Level'].map(education_scores)
-        
+
         income_scores = {'Low': 1, 'Medium': 2, 'High': 3}
         df['Income_Score'] = df['Family_Income'].map(income_scores)
-        
-        df['Parental_Engagement_Score'] = (
-            df['Involvement_Score'] * 0.5 +
-            df['Education_Score'] * 0.3 +
-            df['Income_Score'] * 0.2
-        )
-        
-        df['Engagement_Category'] = pd.cut(df['Parental_Engagement_Score'], 
-                                         bins=[0, 1.5, 2.5, 3], 
-                                         labels=['Low Engagement', 'Medium Engagement', 'High Engagement'])
-        
-        categorical_columns = ['Performance_Category', 'Attendance_Category', 'Study_Hours_Category', 'Engagement_Category']
+
+        categorical_columns = ['Performance_Category', 'Attendance_Category', 'Study_Hours_Category']
         for col in categorical_columns:
             if col in df.columns and df[col].isna().any():
                 df[col] = df[col].cat.add_categories(['Unknown']).fillna('Unknown')
-        
+
         return df
     
     def get_processed_data(self):
