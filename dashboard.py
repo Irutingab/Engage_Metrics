@@ -136,29 +136,6 @@ It visually demonstrates that higher parental involvement is linked to better sc
 Parental engagement is a key area for intervention.
 """)
 
-        st.subheader("Engagement Correlation Heatmap")
-        fig14 = self.visualizations.create_engagement_correlation_heatmap(df)
-        st.pyplot(fig14)
-        st.markdown("""
-**What this shows:**  
-This heatmap focuses on how engagement-related factors (like involvement, education, income) correlate with exam scores.  
-**Why it matters:**  
-It helps pinpoint which aspects of engagement matter most.  
-**Takeaway:**  
-Efforts to improve engagement should focus on the most influential factors.
-""")
-
-        st.subheader("Engagement Score Distribution")
-        fig15 = self.visualizations.create_histogram_chart(df, 'Parental_Engagement_Score', 'Engagement Score Distribution')
-        st.pyplot(fig15)
-        st.markdown("""
-**What this shows:**  
-This chart shows how students are distributed across different levels of parental engagement.  
-**Why it matters:**  
-It helps identify whether most students have the support they need at home.  
-**Takeaway:**  
-If many students have low engagement, targeted outreach to parents may be needed.
-""")
 
         # Recommendations Section
         st.header("Actionable Recommendations")
@@ -184,7 +161,7 @@ If many students have low engagement, targeted outreach to parents may be needed
 - **Get Involved:** Participate in extracurriculars and seek support when needed.
 """)
 
-        # Download button at the end of the dashboard
+        # Download button(this helps users export the dataset)
         st.header("")
         st.download_button(
             label="Download Dataset",
@@ -212,3 +189,4 @@ If many students have low engagement, targeted outreach to parents may be needed
             else:
                 df_clean[col] = df_clean[col].fillna('Unknown')
         return df_clean
+
