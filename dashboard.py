@@ -25,7 +25,7 @@ class StudentDashboard:
         st.metric("Total Students", f"{insights['total_students']}")
 
         # Interactive Filters
-        st.sidebar.header("🔍 Interactive Filters")
+        st.sidebar.header("Interactive Filters")
         involvement_options = ['All'] + list(df['Parental_Involvement'].unique())
         selected_involvement = st.sidebar.selectbox("Filter by Parental Involvement:", involvement_options)
         
@@ -43,7 +43,7 @@ class StudentDashboard:
             filtered_df = filtered_df[filtered_df['Gender'] == selected_gender]
 
         # Show All Charts Option
-        if st.checkbox("📊 Show All Charts"):
+        if st.checkbox("Show All Charts"):
             
             st.subheader("Parental Involvement Distribution")
             fig1 = self.visualizations.create_donut_chart(filtered_df, 'Parental_Involvement', 'Parental Involvement Distribution')
@@ -109,14 +109,6 @@ class StudentDashboard:
 **Takeaway:** Improving attendance is a key step toward better academic outcomes.
 """)
 
-            st.subheader("Box Plot: Scores by Education")
-            fig8 = self.visualizations.create_box_plot_scores_by_education(filtered_df)
-            st.pyplot(fig8)
-            st.markdown("""
-**What this shows:** This plot shows how exam scores are distributed based on parental education and family income.  
-**Why it matters:** It reveals disparities and helps identify groups that may need more support.  
-**Takeaway:** Programs can be tailored to help students from lower-income or lower-education backgrounds.
-""")
 
             st.subheader("Parental Involvement Heatmap")
             fig9 = self.visualizations.create_parental_involvement_heatmap(filtered_df)
@@ -139,7 +131,7 @@ class StudentDashboard:
 
         else:
             # Individual chart selection
-            st.header("📊 Select Individual Charts")
+            st.header("Select Individual Charts")
             viz_option = st.selectbox("Choose visualization:", 
                                     ["Parental Involvement", "Performance Distribution", "Attendance Distribution", 
                                      "Exam Scores", "Correlation Heatmap", "Scores by Involvement", 
@@ -214,16 +206,6 @@ class StudentDashboard:
 **What this shows:** This chart shows the distribution of attendance rates among students.  
 **Why it matters:** Spotting patterns in attendance can help identify students at risk.  
 **Takeaway:** Improving attendance is a key step toward better academic outcomes.
-""")
-            
-            elif viz_option == "Demographics":
-                st.subheader("Box Plot: Scores by Education")
-                fig = self.visualizations.create_box_plot_scores_by_education(filtered_df)
-                st.pyplot(fig)
-                st.markdown("""
-**What this shows:** This plot shows how exam scores are distributed based on parental education and family income.  
-**Why it matters:** It reveals disparities and helps identify groups that may need more support.  
-**Takeaway:** Programs can be tailored to help students from lower-income or lower-education backgrounds.
 """)
             
             elif viz_option == "Parental Heatmap":

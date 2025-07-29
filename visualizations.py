@@ -95,44 +95,6 @@ class Visualizations:
         return fig
     
     @staticmethod
-    def create_box_plot_scores_by_education(df):
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
-        
-        df_temp = df.copy()
-        df_temp['Score_Category'] = pd.cut(df_temp['Exam_Score'], 
-                                         bins=[0, 60, 70, 80, 90, 100], 
-                                         labels=['Poor', 'Fair', 'Good', 'Very Good', 'Excellent'])
-        
-        colors = ["#FF6B6B", "#FFE66D", "#4ECDC4", "#45B7D1", "#96CEB4"]
-        
-        # High School
-        hs_data = df_temp[df_temp['Parental_Education_Level'] == 'High School']['Score_Category'].value_counts()
-        if not hs_data.empty:
-            ax1.pie(hs_data.values, labels=hs_data.index, colors=colors[:len(hs_data)], autopct='%1.1f%%')
-        ax1.set_title('High School Education')
-        
-        # College
-        college_data = df_temp[df_temp['Parental_Education_Level'] == 'College']['Score_Category'].value_counts()
-        if not college_data.empty:
-            ax2.pie(college_data.values, labels=college_data.index, colors=colors[:len(college_data)], autopct='%1.1f%%')
-        ax2.set_title('College Education')
-        
-        # Low Income
-        low_income_data = df_temp[df_temp['Family_Income'] == 'Low']['Score_Category'].value_counts()
-        if not low_income_data.empty:
-            ax3.pie(low_income_data.values, labels=low_income_data.index, colors=colors[:len(low_income_data)], autopct='%1.1f%%')
-        ax3.set_title('Low Income')
-        
-        # High Income
-        high_income_data = df_temp[df_temp['Family_Income'] == 'High']['Score_Category'].value_counts()
-        if not high_income_data.empty:
-            ax4.pie(high_income_data.values, labels=high_income_data.index, colors=colors[:len(high_income_data)], autopct='%1.1f%%')
-        ax4.set_title('High Income')
-        
-        plt.tight_layout()
-        return fig
-    
-    @staticmethod
     def create_parental_involvement_heatmap(df):
         if 'Parental_Involvement' not in df.columns or 'Exam_Score' not in df.columns:
             return None
