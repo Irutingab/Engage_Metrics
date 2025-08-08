@@ -7,4 +7,3 @@ class Analytics:
         insights = {}
         insights['total_students'] = len(df)
         return insights
-

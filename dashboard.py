@@ -4,6 +4,14 @@ import numpy as np
 from data_manager import DataManager
 from visualizations import Visualizations
 from analytics import Analytics
+from ai_assistant import AIAssistant
+try:
+    from enhanced_ai_assistant import EnhancedAIAssistant
+    from intelligent_dashboard import IntelligentDashboard
+    from hybrid_ai_system import HybridAISystem
+    ENHANCED_AI_AVAILABLE = True
+except ImportError:
+    ENHANCED_AI_AVAILABLE = False
 
 class StudentDashboard:
 
@@ -11,16 +19,120 @@ class StudentDashboard:
         self.data_manager = DataManager()
         self.visualizations = Visualizations()
         self.analytics = Analytics()
+        self.ai_assistant = None
+        
+        # Initialize enhanced features if available
+        if ENHANCED_AI_AVAILABLE:
+            self.intelligent_dashboard = IntelligentDashboard()
+            self.enhanced_ai = EnhancedAIAssistant()
+            self.hybrid_ai = HybridAISystem()
+        else:
+            self.intelligent_dashboard = None
+            self.enhanced_ai = None
+            self.hybrid_ai = None
+            
+        if 'intelligent_mode' not in st.session_state:
+            st.session_state.intelligent_mode = ENHANCED_AI_AVAILABLE
+
+    def get_dashboard_context(self) -> dict:
+        """Get current dashboard data for AI context"""
+        df = self.data_manager.get_processed_data()
+        if df is None:
+            return {"error": "No data available"}
+        
+        # Get analytics insights
+        insights = Analytics.get_performance_insights(df)
+        
+        # Build comprehensive context
+        context = {
+            "current_page": "dashboard",
+            "total_students": len(df),
+            "data_columns": list(df.columns),
+            "performance_insights": insights,
+            "available_features": ["metrics", "charts", "data_analysis", "trends", "smart_recommendations"],
+            "timestamp": pd.Timestamp.now().isoformat(),
+            "data_summary": {
+                "score_range": f"{df['Exam_Score'].min():.1f} - {df['Exam_Score'].max():.1f}",
+                "attendance_range": f"{df['Attendance'].min():.1f}% - {df['Attendance'].max():.1f}%",
+                "parental_involvement_levels": list(df['Parental_Involvement'].unique()),
+                "performance_categories": list(df['Performance_Category'].unique()) if 'Performance_Category' in df.columns else []
+            }
+        }
+        
+        return context
 
     def run(self):
         """Main method to run the dashboard with Streamlit UI"""
         st.set_page_config(page_title="Student Performance & Parental Engagement Dashboard", layout="wide")
+        
+        # Enhanced AI Mode Toggle
+        if ENHANCED_AI_AVAILABLE:
+            with st.sidebar:
+                st.header("Dashboard Mode")
+                intelligent_mode = st.toggle("Enable Intelligent Mode", value=st.session_state.intelligent_mode)
+                st.session_state.intelligent_mode = intelligent_mode
+                
+                if intelligent_mode:
+                    st.success("Intelligent Analytics Enabled")
+                    st.info("Features: AI-powered insights, smart recommendations, dynamic narratives")
+                else:
+                    st.info("Standard Mode")
+        
         df = self.data_manager.get_processed_data()
         if df is None:
             st.error("Failed to load data. Please check your data file.")
             return
         df = self.clean_dataframe(df)
-        st.title("Student Performance & Parental Engagement Analysis")
+        
+        # Enhanced title with intelligence indicator
+        title = "Student Performance & Parental Engagement Analysis"
+        if st.session_state.intelligent_mode:
+            title += " (Intelligent Mode)"
+        st.title(title)
+        
+        # Add dashboard description
+        st.markdown("""
+        **Unlock insights into student success!** This interactive dashboard analyzes the relationship between student performance, 
+        attendance patterns, and parental involvement to help educators make data-driven decisions for better learning outcomes.
+        
+        **Key Features:**
+        - Comprehensive performance analytics and visualizations
+        - Interactive filters for targeted analysis  
+        - Correlation analysis between attendance, parental involvement, and academic success
+        - AI-powered insights and recommendations
+        - Actionable recommendations for students, parents, educators, and policymakers
+        """)
+        st.divider()
+        
+        # Intelligent Dashboard Features
+        if st.session_state.intelligent_mode and self.intelligent_dashboard:
+            # Smart insights banner
+            with st.container():
+                st.markdown("### AI-Powered Insights")
+                
+                # Quick AI insights
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    if st.button("Smart Analysis", help="Get AI-powered data analysis"):
+                        with st.spinner("Generating insights..."):
+                            insights = self.enhanced_ai.generate_dynamic_insights(df)
+                            st.info(insights)
+                
+                with col2:
+                    if st.button("Recommendations", help="Get improvement recommendations"):
+                        with st.spinner("Analyzing patterns..."):
+                            recommendations = self.intelligent_dashboard.generate_action_plan(df, "overall")
+                            st.success(recommendations)
+                
+                with col3:
+                    if st.button("Smart Filters", help="Get AI-suggested filters"):
+                        suggestions = self.intelligent_dashboard.create_smart_filter_suggestions(df)
+                        if suggestions:
+                            st.json(suggestions)
+                        else:
+                            st.info("No specific filter suggestions for current data")
+        
         insights = self.analytics.get_performance_insights(df)
         st.metric("Total Students", f"{insights['total_students']}")
 
@@ -28,13 +140,13 @@ class StudentDashboard:
         st.sidebar.header("Interactive Filters")
         involvement_options = ['All'] + list(df['Parental_Involvement'].unique())
         selected_involvement = st.sidebar.selectbox("Filter by Parental Involvement:", involvement_options)
-        
+
         if 'Gender' in df.columns:
             gender_options = ['All'] + list(df['Gender'].unique())
             selected_gender = st.sidebar.selectbox("Filter by Gender:", gender_options)
         else:
             selected_gender = 'All'
-        
+
         # Apply filters
         filtered_df = df.copy()
         if selected_involvement != 'All':
@@ -44,11 +156,18 @@ class StudentDashboard:
 
         # Show All Charts Option
         if st.checkbox("Show All Charts"):
-            
+
             st.subheader("Parental Involvement Distribution")
             fig1 = self.visualizations.create_donut_chart(filtered_df, 'Parental_Involvement', 'Parental Involvement Distribution')
             st.pyplot(fig1)
-            st.markdown("""
+            
+            # Enhanced narrative with AI
+            if st.session_state.intelligent_mode and self.intelligent_dashboard:
+                with st.expander("AI Analysis", expanded=False):
+                    narrative = self.intelligent_dashboard.generate_dynamic_narrative("parental_involvement", filtered_df)
+                    st.markdown(narrative)
+            else:
+                st.markdown("""
 **What this shows:** This chart displays how many students have low, medium, or high parental involvement.  
 **Why it matters:** Higher parental involvement is often linked to better student outcomes.  
 **Takeaway:** Encouraging more parents to be actively involved could help more students succeed.
@@ -109,6 +228,14 @@ class StudentDashboard:
 **Takeaway:** Improving attendance is a key step toward better academic outcomes.
 """)
 
+            st.subheader("Box Plot: Scores by Education")
+            fig8 = self.visualizations.create_box_plot_scores_by_education(filtered_df)
+            st.pyplot(fig8)
+            st.markdown("""
+**What this shows:** This plot shows how exam scores are distributed based on parental education and family income.  
+**Why it matters:** It reveals disparities and helps identify groups that may need more support.  
+**Takeaway:** Programs can be tailored to help students from lower-income or lower-education backgrounds.
+""")
 
             st.subheader("Parental Involvement Heatmap")
             fig9 = self.visualizations.create_parental_involvement_heatmap(filtered_df)
@@ -218,6 +345,16 @@ class StudentDashboard:
 **Takeaway:** Parental engagement is a key area for intervention.
 """)
             
+            elif viz_option == "Demographics":
+                st.subheader("Box Plot: Scores by Education")
+                fig = self.visualizations.create_box_plot_scores_by_education(filtered_df)
+                st.pyplot(fig)
+                st.markdown("""
+**What this shows:** This plot shows how exam scores are distributed based on parental education and family income.  
+**Why it matters:** It reveals disparities and helps identify groups that may need more support.  
+**Takeaway:** Programs can be tailored to help students from lower-income or lower-education backgrounds.
+""")
+            
             elif viz_option == "Attendance Heatmap":
                 st.subheader("Attendance Performance Heatmap")
                 fig = self.visualizations.create_attendance_performance_heatmap(filtered_df)
@@ -261,6 +398,10 @@ class StudentDashboard:
             file_name='student_performance_export.csv',
             mime='text/csv',
         )
+
+        # Enhanced AI Assistant
+        ai_assistant = AIAssistant()
+        ai_assistant.render_streamlit_interface(filtered_df, self.get_dashboard_context())
 
     def clean_dataframe(self, df):
         """Clean dataframe for analysis"""

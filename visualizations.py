@@ -95,6 +95,50 @@ class Visualizations:
         return fig
     
     @staticmethod
+    def create_box_plot_scores_by_education(df):
+        """Create box plot showing scores by parental education and family income"""
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+        
+        # Box plot by Parental Education Level
+        if 'Parental_Education_Level' in df.columns:
+            education_order = ['High School', 'College', 'Postgraduate']
+            df_filtered = df[df['Parental_Education_Level'].isin(education_order)]
+            
+            box_data_education = [df_filtered[df_filtered['Parental_Education_Level'] == level]['Exam_Score'].values 
+                                for level in education_order if level in df_filtered['Parental_Education_Level'].values]
+            
+            bp1 = ax1.boxplot(box_data_education, labels=education_order, patch_artist=True)
+            colors = ['#FF9999', '#66B2FF', '#99FF99']
+            for patch, color in zip(bp1['boxes'], colors):
+                patch.set_facecolor(color)
+            
+            ax1.set_title('Exam Scores by Parental Education Level', fontweight='bold')
+            ax1.set_xlabel('Parental Education Level')
+            ax1.set_ylabel('Exam Score')
+            ax1.grid(True, alpha=0.3)
+        
+        # Box plot by Family Income
+        if 'Family_Income' in df.columns:
+            income_order = ['Low', 'Medium', 'High']
+            df_filtered = df[df['Family_Income'].isin(income_order)]
+            
+            box_data_income = [df_filtered[df_filtered['Family_Income'] == level]['Exam_Score'].values 
+                             for level in income_order if level in df_filtered['Family_Income'].values]
+            
+            bp2 = ax2.boxplot(box_data_income, labels=income_order, patch_artist=True)
+            colors = ['#FFB366', '#66FFB2', '#B366FF']
+            for patch, color in zip(bp2['boxes'], colors):
+                patch.set_facecolor(color)
+            
+            ax2.set_title('Exam Scores by Family Income Level', fontweight='bold')
+            ax2.set_xlabel('Family Income Level')
+            ax2.set_ylabel('Exam Score')
+            ax2.grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        return fig
+    
+    @staticmethod
     def create_parental_involvement_heatmap(df):
         if 'Parental_Involvement' not in df.columns or 'Exam_Score' not in df.columns:
             return None
