@@ -8,7 +8,7 @@ class DataManager:
         self.df = None
     
     @staticmethod
-    @st.cache_data # load the csv data # Cache the data loading function to improve performance
+    @st.cache_data # load the csv data # Cache the data loading function to improve performance 
     def load_data(filename):
         """Loads data from a local CSV file."""
         try:

@@ -10,7 +10,7 @@ class Visualizations:
         value_counts = df[column].value_counts()
         if colors is None:
             colors = plt.cm.Set3(np.linspace(0, 1, len(value_counts)))
-        fig, ax = plt.subplots(figsize=(8, 8))
+        fig, ax = plt.subplots(figsize=(7, 7))  #figure sixe
         wedges, texts, autotexts = ax.pie(
             value_counts.values, labels=value_counts.index, colors=colors,
             autopct='%1.1f%%', startangle=90, wedgeprops=dict(width=0.6)
@@ -18,7 +18,8 @@ class Visualizations:
         for autotext in autotexts:
             autotext.set_color('white')
             autotext.set_fontweight('bold')
-        ax.set_title(title, fontsize=16, fontweight='bold', pad=20)
+            autotext.set_fontsize(9)  #text size
+        ax.set_title(title, fontsize=11, fontweight='bold', pad=8)  # title size
         plt.tight_layout()
         return fig
 
@@ -95,45 +96,53 @@ class Visualizations:
         return fig
     
     @staticmethod
-    def create_box_plot_scores_by_education(df):
-        """Create box plot showing scores by parental education and family income"""
+    def create_bar_chart_scores_by_education(df):
+        """Create bar chart showing average scores by parental education and family income"""
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
         
-        # Box plot by Parental Education Level
+        # Bar chart by Parental Education Level
         if 'Parental_Education_Level' in df.columns:
             education_order = ['High School', 'College', 'Postgraduate']
             df_filtered = df[df['Parental_Education_Level'].isin(education_order)]
             
-            box_data_education = [df_filtered[df_filtered['Parental_Education_Level'] == level]['Exam_Score'].values 
-                                for level in education_order if level in df_filtered['Parental_Education_Level'].values]
+            mean_scores_education = df_filtered.groupby('Parental_Education_Level')['Exam_Score'].mean()
+            mean_scores_education = mean_scores_education.reindex(education_order)
             
-            bp1 = ax1.boxplot(box_data_education, labels=education_order, patch_artist=True)
-            colors = ['#FF9999', '#66B2FF', '#99FF99']
-            for patch, color in zip(bp1['boxes'], colors):
-                patch.set_facecolor(color)
+            colors = ["#99FFAF", "#439676", "#8BDDA7"]
+            bars1 = ax1.bar(education_order, mean_scores_education, color=colors, edgecolor='black')
             
-            ax1.set_title('Exam Scores by Parental Education Level', fontweight='bold')
+            # Add value labels on bars
+            for bar, value in zip(bars1, mean_scores_education):
+                if pd.notna(value):
+                    ax1.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5, 
+                            f'{value:.1f}', ha='center', va='bottom', fontweight='bold')
+            
+            ax1.set_title('Average Exam Scores by Parental Education Level', fontweight='bold')
             ax1.set_xlabel('Parental Education Level')
-            ax1.set_ylabel('Exam Score')
-            ax1.grid(True, alpha=0.3)
+            ax1.set_ylabel('Average Exam Score')
+            ax1.grid(True, alpha=0.3, axis='y')
         
-        # Box plot by Family Income
+        # Bar chart by Family Income
         if 'Family_Income' in df.columns:
             income_order = ['Low', 'Medium', 'High']
             df_filtered = df[df['Family_Income'].isin(income_order)]
             
-            box_data_income = [df_filtered[df_filtered['Family_Income'] == level]['Exam_Score'].values 
-                             for level in income_order if level in df_filtered['Family_Income'].values]
+            mean_scores_income = df_filtered.groupby('Family_Income')['Exam_Score'].mean()
+            mean_scores_income = mean_scores_income.reindex(income_order)
             
-            bp2 = ax2.boxplot(box_data_income, labels=income_order, patch_artist=True)
-            colors = ['#FFB366', '#66FFB2', '#B366FF']
-            for patch, color in zip(bp2['boxes'], colors):
-                patch.set_facecolor(color)
+            colors = ["#66FFD9", "#44946C", "#4CC09D"]
+            bars2 = ax2.bar(income_order, mean_scores_income, color=colors, edgecolor='black')
             
-            ax2.set_title('Exam Scores by Family Income Level', fontweight='bold')
+            # Add value labels on bars
+            for bar, value in zip(bars2, mean_scores_income):
+                if pd.notna(value):
+                    ax2.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.5, 
+                            f'{value:.1f}', ha='center', va='bottom', fontweight='bold')
+            
+            ax2.set_title('Average Exam Scores by Family Income Level', fontweight='bold')
             ax2.set_xlabel('Family Income Level')
-            ax2.set_ylabel('Exam Score')
-            ax2.grid(True, alpha=0.3)
+            ax2.set_ylabel('Average Exam Score')
+            ax2.grid(True, alpha=0.3, axis='y')
         
         plt.tight_layout()
         return fig

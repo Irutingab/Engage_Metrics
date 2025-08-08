@@ -4,35 +4,17 @@ import numpy as np
 from data_manager import DataManager
 from visualizations import Visualizations
 from analytics import Analytics
-from ai_assistant import AIAssistant
-try:
-    from enhanced_ai_assistant import EnhancedAIAssistant
-    from intelligent_dashboard import IntelligentDashboard
-    from hybrid_ai_system import HybridAISystem
-    ENHANCED_AI_AVAILABLE = True
-except ImportError:
-    ENHANCED_AI_AVAILABLE = False
-
+from ai_assistant_simple import SimpleAIAssistant
 class StudentDashboard:
 
     def __init__(self):
         self.data_manager = DataManager()
         self.visualizations = Visualizations()
         self.analytics = Analytics()
-        self.ai_assistant = None
-        
-        # Initialize enhanced features if available
-        if ENHANCED_AI_AVAILABLE:
-            self.intelligent_dashboard = IntelligentDashboard()
-            self.enhanced_ai = EnhancedAIAssistant()
-            self.hybrid_ai = HybridAISystem()
-        else:
-            self.intelligent_dashboard = None
-            self.enhanced_ai = None
-            self.hybrid_ai = None
-            
+        self.ai_assistant = SimpleAIAssistant()
+
         if 'intelligent_mode' not in st.session_state:
-            st.session_state.intelligent_mode = ENHANCED_AI_AVAILABLE
+            st.session_state.intelligent_mode = False
 
     def get_dashboard_context(self) -> dict:
         """Get current dashboard data for AI context"""
@@ -65,30 +47,14 @@ class StudentDashboard:
         """Main method to run the dashboard with Streamlit UI"""
         st.set_page_config(page_title="Student Performance & Parental Engagement Dashboard", layout="wide")
         
-        # Enhanced AI Mode Toggle
-        if ENHANCED_AI_AVAILABLE:
-            with st.sidebar:
-                st.header("Dashboard Mode")
-                intelligent_mode = st.toggle("Enable Intelligent Mode", value=st.session_state.intelligent_mode)
-                st.session_state.intelligent_mode = intelligent_mode
-                
-                if intelligent_mode:
-                    st.success("Intelligent Analytics Enabled")
-                    st.info("Features: AI-powered insights, smart recommendations, dynamic narratives")
-                else:
-                    st.info("Standard Mode")
-        
         df = self.data_manager.get_processed_data()
         if df is None:
             st.error("Failed to load data. Please check your data file.")
             return
         df = self.clean_dataframe(df)
         
-        # Enhanced title with intelligence indicator
-        title = "Student Performance & Parental Engagement Analysis"
-        if st.session_state.intelligent_mode:
-            title += " (Intelligent Mode)"
-        st.title(title)
+        # Title
+        st.title("Student Performance & Parental Engagement Analysis")
         
         # Add dashboard description
         st.markdown("""
@@ -228,8 +194,8 @@ class StudentDashboard:
 **Takeaway:** Improving attendance is a key step toward better academic outcomes.
 """)
 
-            st.subheader("Box Plot: Scores by Education")
-            fig8 = self.visualizations.create_box_plot_scores_by_education(filtered_df)
+            st.subheader("Bar Chart: Scores by Education")
+            fig8 = self.visualizations.create_bar_chart_scores_by_education(filtered_df)
             st.pyplot(fig8)
             st.markdown("""
 **What this shows:** This plot shows how exam scores are distributed based on parental education and family income.  
@@ -346,8 +312,8 @@ class StudentDashboard:
 """)
             
             elif viz_option == "Demographics":
-                st.subheader("Box Plot: Scores by Education")
-                fig = self.visualizations.create_box_plot_scores_by_education(filtered_df)
+                st.subheader("Bar Chart: Scores by Education")
+                fig = self.visualizations.create_bar_chart_scores_by_education(filtered_df)
                 st.pyplot(fig)
                 st.markdown("""
 **What this shows:** This plot shows how exam scores are distributed based on parental education and family income.  
@@ -370,7 +336,7 @@ class StudentDashboard:
         st.header("Actionable Recommendations")
         st.markdown("""
 ### For Parents
-- **Stay Involved:** Regularly check your child's attendance and grades. Even small actions—like asking about school or helping with homework—can make a big difference.
+- **Stay Involved:** Regularly check your child's attendance and grades. Even small actions like asking about school or helping with homework can make a big difference.
 - **Encourage Good Study Habits:** Set aside time and a quiet space for studying.
 - **Communicate with Teachers:** Stay in touch with your child's teachers to catch issues early.
 
@@ -399,9 +365,9 @@ class StudentDashboard:
             mime='text/csv',
         )
 
-        # Enhanced AI Assistant
-        ai_assistant = AIAssistant()
-        ai_assistant.render_streamlit_interface(filtered_df, self.get_dashboard_context())
+        # Simple AI Assistant
+        ai_assistant = SimpleAIAssistant()
+        ai_assistant.render_chat_interface(filtered_df)
 
     def clean_dataframe(self, df):
         """Clean dataframe for analysis"""
