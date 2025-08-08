@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 
 class Analytics:
     @staticmethod
@@ -7,4 +6,3 @@ class Analytics:
         insights = {}
         insights['total_students'] = len(df)
         return insights
-
