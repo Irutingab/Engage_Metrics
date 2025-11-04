@@ -10,22 +10,67 @@ from datetime import datetime
 class StudentProfile:
     """Generate comprehensive student profiles with insights and recommendations"""
     
-    def __init__(self, student_data, class_data):
+    def __init__(self, student_data=None, class_data=None):
         """
         Args:
-            student_data: Series or dict with individual student information
-            class_data: DataFrame with all students for comparison
+            student_data: Series or dict with individual student information (optional for factory methods)
+            class_data: DataFrame with all students for comparison (optional for factory methods)
         """
-        self.student = student_data if isinstance(student_data, dict) else student_data.to_dict()
-        self.class_data = class_data
-        self.class_avg = class_data.mean(numeric_only=True)
+        if student_data is not None:
+            self.student = student_data if isinstance(student_data, dict) else student_data.to_dict()
+            self.class_data = class_data
+            self.class_avg = class_data.mean(numeric_only=True) if class_data is not None else None
+        else:
+            self.student = None
+            self.class_data = None
+            self.class_avg = None
+    
+    @staticmethod
+    def generate_comprehensive_report(df, student_id):
+        """
+        Factory method to generate a report for a specific student
         
-    def generate_comprehensive_report(self):
-        """Generate complete student profile report"""
+        Args:
+            df: DataFrame with all student data
+            student_id: ID of the student to analyze
+            
+        Returns:
+            dict: Comprehensive report for the student
+        """
+        # Find the student
+        if 'Student_ID' in df.columns:
+            student_data = df[df['Student_ID'] == student_id]
+        else:
+            # Assume student_id is an index
+            student_data = df.iloc[[student_id - 1]] if student_id <= len(df) else None
+        
+        if student_data is None or len(student_data) == 0:
+            return None
+        
+        student_row = student_data.iloc[0]
+        
+        # Create instance and generate report
+        profile = StudentProfile(student_row, df)
+        return profile._generate_report()
+    
+    @staticmethod
+    def generate_printable_summary(df, student_id):
+        """Generate a parent-friendly printable summary"""
+        report = StudentProfile.generate_comprehensive_report(df, student_id)
+        if not report:
+            return "Student not found."
+        
+        return StudentProfile._format_printable_summary(report)
+    
+    def _generate_report(self):
+        """Generate complete student profile report (instance method)"""
+        if self.student is None:
+            return None
+            
         report = {
             'timestamp': datetime.now().isoformat(),
             'student_info': self._get_student_info(),
-            'performance_summary': self._analyze_performance(),
+            'performance': self._analyze_performance(),
             'strengths': self._identify_strengths(),
             'challenges': self._identify_challenges(),
             'peer_comparison': self._compare_to_peers(),
@@ -546,9 +591,11 @@ class StudentProfile:
         
         return metrics
     
-    def generate_printable_summary(self):
-        """Generate a parent-friendly summary"""
-        report = self.generate_comprehensive_report()
+    @staticmethod
+    def _format_printable_summary(report):
+        """Format a report into a parent-friendly summary"""
+        if not report:
+            return "No report available."
         
         summary = f"""
 STUDENT PERFORMANCE REPORT
@@ -559,28 +606,35 @@ PERFORMANCE OVERVIEW:
 {'-' * 60}
 """
         
-        perf = report['performance_summary']
-        if 'exam_score' in perf:
-            summary += f"Exam Score: {perf['exam_score']}/100 (Class Avg: {perf['class_average']:.1f})\n"
-            summary += f"Performance Level: {perf['performance_level']}\n"
-            summary += f"Class Percentile: {perf['percentile']:.0f}th\n"
+        perf = report.get('performance', {})
+        if 'current_score' in perf:
+            summary += f"Exam Score: {perf['current_score']:.1f}/100\n"
+            summary += f"Letter Grade: {perf['letter_grade']}\n"
+            summary += f"Performance Status: {perf['performance_status']}\n"
+            summary += f"Class Percentile: {perf['percentile_rank']:.0f}th\n"
         
-        if 'attendance_rate' in perf:
-            summary += f"Attendance: {perf['attendance_rate']:.1f}% ({perf['attendance_rating']})\n"
+        strengths = report.get('strengths', [])
+        if strengths:
+            summary += f"\nSTRENGTHS ({len(strengths)}):\n{'-' * 60}\n"
+            for i, strength in enumerate(strengths[:5], 1):
+                summary += f"{i}. {strength}\n"
         
-        summary += f"\nSTRENGTHS ({len(report['strengths'])}):\n{'-' * 60}\n"
-        for i, strength in enumerate(report['strengths'][:3], 1):
-            summary += f"{i}. {strength['area']}: {strength['description']}\n"
+        challenges = report.get('challenges', [])
+        if challenges:
+            summary += f"\nAREAS FOR IMPROVEMENT ({len(challenges)}):\n{'-' * 60}\n"
+            for i, challenge in enumerate(challenges[:5], 1):
+                severity = challenge.get('severity', 'Medium')
+                summary += f"{i}. {challenge['area']} ({severity} priority)\n"
+                summary += f"   {challenge['description']}\n"
         
-        summary += f"\nAREAS FOR IMPROVEMENT ({len(report['challenges'])}):\n{'-' * 60}\n"
-        for i, challenge in enumerate(report['challenges'][:3], 1):
-            summary += f"{i}. {challenge['area']} ({challenge['severity']} priority)\n"
-            summary += f"   {challenge['description']}\n"
-        
-        summary += f"\nTOP RECOMMENDATIONS:\n{'-' * 60}\n"
-        for i, rec in enumerate(report['recommendations'][:3], 1):
-            summary += f"{i}. {rec['action']}\n"
-            for step in rec['specific_steps'][:2]:
-                summary += f"   • {step}\n"
+        recommendations = report.get('recommendations', [])
+        if recommendations:
+            summary += f"\nTOP RECOMMENDATIONS:\n{'-' * 60}\n"
+            for i, rec in enumerate(recommendations[:5], 1):
+                action = rec.get('action', rec.get('recommendation', 'No action specified'))
+                summary += f"{i}. {action}\n"
+                steps = rec.get('action_steps', rec.get('specific_steps', []))
+                for step in steps[:2]:
+                    summary += f"   • {step}\n"
         
         return summary

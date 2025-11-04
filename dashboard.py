@@ -79,22 +79,26 @@ class StudentDashboard:
         with col1:
             st.metric("Total Students", f"{insights['total_students']:,}")
         with col2:
-            st.metric("Average Score", f"{insights['average_score']:.1f}")
+            st.metric("Average Score", f"{insights.get('avg_score', 0):.1f}")
         with col3:
-            st.metric("At-Risk Students", f"{insights['at_risk_count']}")
+            st.metric("At-Risk Students", f"{insights.get('at_risk_students', 0)}")
         with col4:
-            st.metric("Avg Attendance", f"{insights['average_attendance']:.1f}%")
+            st.metric("Avg Attendance", f"{insights.get('avg_attendance', 0):.1f}%")
         
         # Expanded metrics
+        at_risk_df = self.analytics.predict_at_risk_students(df)
+        high_risk = len(at_risk_df[at_risk_df['risk_level'] == 'High']) if not at_risk_df.empty else 0
+        medium_risk = len(at_risk_df[at_risk_df['risk_level'] == 'Medium']) if not at_risk_df.empty else 0
+        
         col1, col2, col3, col4 = st.columns(4)
         with col1:
-            st.metric("Median Score", f"{insights['median_score']:.1f}")
+            st.metric("Median Score", f"{insights.get('median_score', 0):.1f}")
         with col2:
-            st.metric("Top 10% Score", f"{insights['top_10_percent_score']:.1f}")
+            st.metric("Top 10% Threshold", f"{insights.get('top_10_percent_threshold', 0):.1f}")
         with col3:
-            st.metric("High Risk", f"{insights['high_risk_count']}")
+            st.metric("High Risk", f"{high_risk}")
         with col4:
-            st.metric("Medium Risk", f"{insights['medium_risk_count']}")
+            st.metric("Medium Risk", f"{medium_risk}")
 
         # Interactive Filters
         st.sidebar.header("🔍 Interactive Filters")
@@ -140,34 +144,42 @@ class StudentDashboard:
         st.header("💡 Intervention Impact Calculator")
         st.markdown("**Estimate the potential impact of targeted interventions**")
         
+        interventions = self.analytics.calculate_intervention_impact(filtered_df)
+        
         col1, col2, col3 = st.columns(3)
         
         with col1:
             st.subheader("Attendance Improvement")
-            attendance_impact = self.analytics.calculate_intervention_impact(
-                filtered_df, 'attendance', improvement_percent=10
-            )
-            st.metric("Students Affected", f"{attendance_impact['students_affected']}")
-            st.metric("Expected Score Increase", f"+{attendance_impact['expected_score_increase']:.2f}")
-            st.metric("ROI", f"{attendance_impact['roi']:.1f}x")
+            if 'improve_attendance' in interventions:
+                interv = interventions['improve_attendance']
+                st.metric("Students Affected", f"{interv['students_affected']}")
+                st.metric("Current Avg Score", f"{interv['current_avg_score']:.1f}")
+                st.metric("Expected Gain", f"+{interv['estimated_score_gain']:.2f}")
+                st.info(interv['recommendation'])
+            else:
+                st.info("No attendance intervention needed")
         
         with col2:
             st.subheader("Parental Involvement")
-            parent_impact = self.analytics.calculate_intervention_impact(
-                filtered_df, 'parental_involvement', improvement_percent=10
-            )
-            st.metric("Students Affected", f"{parent_impact['students_affected']}")
-            st.metric("Expected Score Increase", f"+{parent_impact['expected_score_increase']:.2f}")
-            st.metric("ROI", f"{parent_impact['roi']:.1f}x")
+            if 'increase_parental_involvement' in interventions:
+                interv = interventions['increase_parental_involvement']
+                st.metric("Students Affected", f"{interv['students_affected']}")
+                st.metric("Current Avg Score", f"{interv['current_avg_score']:.1f}")
+                st.metric("Expected Gain", f"+{interv['estimated_score_gain']:.2f}")
+                st.info(interv['recommendation'])
+            else:
+                st.info("No parental involvement intervention needed")
         
         with col3:
             st.subheader("Study Habits")
-            study_impact = self.analytics.calculate_intervention_impact(
-                filtered_df, 'study_habits', improvement_percent=10
-            )
-            st.metric("Students Affected", f"{study_impact['students_affected']}")
-            st.metric("Expected Score Increase", f"+{study_impact['expected_score_increase']:.2f}")
-            st.metric("ROI", f"{study_impact['roi']:.1f}x")
+            if 'optimize_study_habits' in interventions:
+                interv = interventions['optimize_study_habits']
+                st.metric("Students Affected", f"{interv['students_affected']}")
+                st.metric("Current Avg Score", f"{interv['current_avg_score']:.1f}")
+                st.metric("Expected Gain", f"+{interv['estimated_score_gain']:.2f}")
+                st.info(interv['recommendation'])
+            else:
+                st.info("No study habits intervention needed")
 
         # Visualizations
         st.header("📊 Data Visualizations")
@@ -312,23 +324,59 @@ class StudentDashboard:
         
         with rec_tabs[0]:
             st.subheader("For Parents")
-            for rec in recommendations['parents']:
-                st.markdown(f"- {rec}")
+            if 'for_parents' in recommendations:
+                for rec in recommendations['for_parents']:
+                    priority = rec.get('priority', 'Medium')
+                    icon = "🔴" if priority == 'Critical' or priority == 'High' else "🟡"
+                    st.markdown(f"{icon} **{rec['action']}** ({priority} Priority)")
+                    st.markdown(f"   {rec['description']}")
+                    if 'expected_impact' in rec:
+                        st.markdown(f"   *Expected Impact: {rec['expected_impact']}*")
+                    st.markdown("")
+            else:
+                st.info("No specific recommendations at this time.")
         
         with rec_tabs[1]:
             st.subheader("For Educators")
-            for rec in recommendations['educators']:
-                st.markdown(f"- {rec}")
+            if 'for_educators' in recommendations:
+                for rec in recommendations['for_educators']:
+                    priority = rec.get('priority', 'Medium')
+                    icon = "🔴" if priority == 'Critical' or priority == 'High' else "🟡"
+                    st.markdown(f"{icon} **{rec['action']}** ({priority} Priority)")
+                    st.markdown(f"   {rec['description']}")
+                    if 'expected_impact' in rec:
+                        st.markdown(f"   *Expected Impact: {rec['expected_impact']}*")
+                    st.markdown("")
+            else:
+                st.info("No specific recommendations at this time.")
         
         with rec_tabs[2]:
             st.subheader("For Administrators")
-            for rec in recommendations['administrators']:
-                st.markdown(f"- {rec}")
+            if 'for_administrators' in recommendations:
+                for rec in recommendations['for_administrators']:
+                    priority = rec.get('priority', 'Medium')
+                    icon = "🔴" if priority == 'Critical' or priority == 'High' else "🟡"
+                    st.markdown(f"{icon} **{rec['action']}** ({priority} Priority)")
+                    st.markdown(f"   {rec['description']}")
+                    if 'expected_impact' in rec:
+                        st.markdown(f"   *Expected Impact: {rec['expected_impact']}*")
+                    st.markdown("")
+            else:
+                st.info("No specific recommendations at this time.")
         
         with rec_tabs[3]:
             st.subheader("For Students")
-            for rec in recommendations['students']:
-                st.markdown(f"- {rec}")
+            if 'for_students' in recommendations:
+                for rec in recommendations['for_students']:
+                    priority = rec.get('priority', 'Medium')
+                    icon = "🔴" if priority == 'Critical' or priority == 'High' else "🟡"
+                    st.markdown(f"{icon} **{rec['action']}** ({priority} Priority)")
+                    st.markdown(f"   {rec['description']}")
+                    if 'expected_impact' in rec:
+                        st.markdown(f"   *Expected Impact: {rec['expected_impact']}*")
+                    st.markdown("")
+            else:
+                st.info("No specific recommendations at this time.")
 
         # Download button
         st.header("📥 Export Data")
@@ -376,11 +424,11 @@ class StudentDashboard:
                     perf = report['performance']
                     col1, col2, col3, col4 = st.columns(4)
                     with col1:
-                        st.metric("Exam Score", f"{perf['current_score']:.1f}")
+                        st.metric("Exam Score", f"{perf['exam_score']:.1f}")
                     with col2:
                         st.metric("Letter Grade", perf['letter_grade'])
                     with col3:
-                        st.metric("Class Percentile", f"{perf['percentile_rank']:.0f}%")
+                        st.metric("Class Percentile", f"{perf['percentile']:.0f}%")
                     with col4:
                         st.metric("Status", perf['performance_status'])
                     
