@@ -4,14 +4,14 @@ import numpy as np
 from data_manager import DataManager
 from visualizations import Visualizations
 from analytics import Analytics
-from ai_assistant_simple import SimpleAIAssistant
+from ai_assistant_educational import EducationalAIAssistant
 class StudentDashboard:
 
     def __init__(self):
         self.data_manager = DataManager()
         self.visualizations = Visualizations()
         self.analytics = Analytics()
-        self.ai_assistant = SimpleAIAssistant()
+        self.ai_assistant = EducationalAIAssistant()
 
         if 'intelligent_mode' not in st.session_state:
             st.session_state.intelligent_mode = False
@@ -365,8 +365,8 @@ class StudentDashboard:
             mime='text/csv',
         )
 
-        # Simple AI Assistant
-        ai_assistant = SimpleAIAssistant()
+        # Educational AI Assistant
+        ai_assistant = EducationalAIAssistant()
         ai_assistant.render_chat_interface(filtered_df)
 
     def clean_dataframe(self, df):
