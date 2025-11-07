@@ -9,28 +9,46 @@ from datetime import datetime, timedelta
 import json
 
 class GoalTracker:
-    """Manage academic goals and track progress over time"""
+    """Manage academic goals and track progress over time - Multi-student support"""
     
-    def __init__(self, student_id=None):
-        self.student_id = student_id
+    def __init__(self):
+        """Initialize goal tracker for managing goals across all students"""
         self.goals = []
+        self.next_goal_id = 1
     
-    def create_goal(self, goal_type, current_value, target_value, timeline_days=90, 
-                   description="", priority="medium"):
+    def create_goal(self, student_id, goal_type, current_value, target_value, 
+                   timeline_days=90, description="", priority="medium", target_date=None):
         """
-        Create a new academic goal
+        Create a new academic goal for a student
         
         Args:
-            goal_type: Type of goal ('exam_score', 'attendance', 'study_hours', etc.)
+            student_id: ID of the student
+            goal_type: Type of goal ('Exam Score', 'Attendance', 'Study Hours', etc.)
             current_value: Starting value
             target_value: Desired end value
-            timeline_days: Number of days to achieve goal
+            timeline_days: Number of days to achieve goal (default: 90)
             description: Custom description
             priority: 'high', 'medium', or 'low'
+            target_date: Optional target date string
+        
+        Returns:
+            goal_id: ID of created goal
         """
+        goal_id = self.next_goal_id
+        self.next_goal_id += 1
+        
+        # Parse target date if provided, otherwise calculate from timeline_days
+        if target_date:
+            try:
+                t_date = datetime.fromisoformat(str(target_date)) if isinstance(target_date, str) else target_date
+            except:
+                t_date = datetime.now() + timedelta(days=timeline_days)
+        else:
+            t_date = datetime.now() + timedelta(days=timeline_days)
+        
         goal = {
-            'id': len(self.goals) + 1,
-            'student_id': self.student_id,
+            'goal_id': goal_id,
+            'student_id': student_id,
             'goal_type': goal_type,
             'current_value': current_value,
             'target_value': target_value,
@@ -39,14 +57,14 @@ class GoalTracker:
             'description': description or f"Improve {goal_type} from {current_value} to {target_value}",
             'priority': priority,
             'created_date': datetime.now(),
-            'target_date': datetime.now() + timedelta(days=timeline_days),
+            'target_date': t_date,
             'status': 'active',
             'milestones': self._generate_milestones(current_value, target_value, timeline_days),
-            'progress_history': [{'date': datetime.now(), 'value': current_value}]
+            'progress_history': [{'date': datetime.now().isoformat(), 'value': current_value}]
         }
         
         self.goals.append(goal)
-        return goal
+        return goal_id
     
     def _generate_milestones(self, current, target, days):
         """Generate intermediate milestones (30/60/90 day checkpoints)"""
@@ -68,18 +86,28 @@ class GoalTracker:
         
         return milestones
     
-    def update_progress(self, goal_id, new_value, date=None):
-        """Update progress for a goal"""
-        goal = next((g for g in self.goals if g['id'] == goal_id), None)
+    def update_progress(self, goal_id, new_value, notes="", date=None):
+        """
+        Update progress for a goal
+        
+        Args:
+            goal_id: ID of the goal
+            new_value: New progress value
+            notes: Optional progress notes
+            date: Optional date (defaults to now)
+        """
+        goal = next((g for g in self.goals if g['goal_id'] == goal_id), None)
         if not goal:
             return {"error": "Goal not found"}
         
         update_date = date or datetime.now()
+        update_date_str = update_date.isoformat() if isinstance(update_date, datetime) else str(update_date)
         
         # Add to progress history
         goal['progress_history'].append({
-            'date': update_date,
-            'value': new_value
+            'date': update_date_str,
+            'value': new_value,
+            'notes': notes
         })
         
         # Update current value
@@ -89,34 +117,42 @@ class GoalTracker:
         for milestone in goal['milestones']:
             if not milestone['achieved'] and new_value >= milestone['target_value']:
                 milestone['achieved'] = True
-                milestone['achievement_date'] = update_date
+                milestone['achievement_date'] = update_date_str
         
         # Check if goal is achieved
         if new_value >= goal['target_value']:
             goal['status'] = 'achieved'
-            goal['achievement_date'] = update_date
+            goal['achievement_date'] = update_date_str
+        elif update_date > goal['target_date'] and new_value < goal['target_value']:
+            goal['status'] = 'missed'
         
-        # Calculate progress percentage
-        total_improvement = goal['target_value'] - goal['baseline_value']
-        current_improvement = new_value - goal['baseline_value']
-        goal['progress_percentage'] = (current_improvement / total_improvement * 100) if total_improvement != 0 else 100
-        
-        return goal
+        return {"success": True, "goal_id": goal_id, "new_value": new_value}
     
     def get_goal_status(self, goal_id):
         """Get detailed status of a goal"""
-        goal = next((g for g in self.goals if g['id'] == goal_id), None)
+        goal = next((g for g in self.goals if g['goal_id'] == goal_id), None)
         if not goal:
             return None
         
-        days_elapsed = (datetime.now() - goal['created_date']).days
-        days_remaining = (goal['target_date'] - datetime.now()).days
+        created_date = datetime.fromisoformat(goal['created_date']) if isinstance(goal['created_date'], str) else goal['created_date']
+        target_date = datetime.fromisoformat(goal['target_date']) if isinstance(goal['target_date'], str) else goal['target_date']
         
-        progress_pct = goal.get('progress_percentage', 0)
+        days_elapsed = (datetime.now() - created_date).days
+        days_remaining = (target_date - datetime.now()).days
+        
+        # Calculate progress percentage
+        total_improvement = goal['target_value'] - goal['baseline_value']
+        current_improvement = goal['current_value'] - goal['baseline_value']
+        progress_pct = (current_improvement / total_improvement * 100) if total_improvement != 0 else 100
+        
         expected_progress = (days_elapsed / goal['timeline_days'] * 100) if goal['timeline_days'] > 0 else 0
         
         status = {
             'goal': goal,
+            'goal_id': goal_id,
+            'current_value': goal['current_value'],
+            'target_value': goal['target_value'],
+            'progress_percentage': progress_pct,
             'days_elapsed': days_elapsed,
             'days_remaining': max(0, days_remaining),
             'progress_percentage': progress_pct,
@@ -127,6 +163,24 @@ class GoalTracker:
         }
         
         return status
+    
+    def get_student_goals(self, student_id, status_filter=None):
+        """
+        Get all goals for a specific student
+        
+        Args:
+            student_id: ID of the student
+            status_filter: Optional filter ('active', 'achieved', 'missed')
+        
+        Returns:
+            List of goals for the student
+        """
+        student_goals = [g for g in self.goals if g['student_id'] == student_id]
+        
+        if status_filter:
+            student_goals = [g for g in student_goals if g['status'] == status_filter]
+        
+        return student_goals
     
     def get_all_active_goals(self):
         """Get all active goals"""
@@ -204,95 +258,113 @@ MILESTONES:
         
         return report
     
-    def suggest_goals(self, student_data, class_data):
-        """Suggest goals based on student performance"""
+    def suggest_goals(self, df, student_id):
+        """
+        Suggest goals based on student performance
+        
+        Args:
+            df: DataFrame with all student data
+            student_id: ID of the student
+        
+        Returns:
+            List of suggested goals
+        """
+        # Find student data
+        if 'Student_ID' in df.columns:
+            student_data = df[df['Student_ID'] == student_id]
+        else:
+            student_data = df.iloc[[student_id - 1]] if student_id <= len(df) else None
+        
+        if student_data is None or len(student_data) == 0:
+            return []
+        
+        student_row = student_data.iloc[0]
         suggestions = []
         
         # Exam score goal
-        if 'Exam_Score' in student_data:
-            current_score = student_data['Exam_Score']
-            class_avg = class_data['Exam_Score'].mean()
+        if 'Exam_Score' in df.columns:
+            current_score = student_row['Exam_Score']
+            class_avg = df['Exam_Score'].mean()
             
             if current_score < 70:
                 target = 70
-                priority = 'high'
-                description = "Reach passing grade (70)"
+                priority = 'High'
+                reason = "Reach passing grade (70) - Essential for academic progress"
             elif current_score < class_avg:
                 target = class_avg + 5
-                priority = 'medium'
-                description = f"Score above class average ({class_avg:.1f})"
+                priority = 'Medium'
+                reason = f"Score above class average ({class_avg:.1f}) - Shows improvement"
             else:
                 target = min(current_score + 10, 98)
-                priority = 'medium'
-                description = "Maintain excellence and aim for top performance"
+                priority = 'Medium'
+                reason = "Maintain excellence and aim for top performance"
             
             suggestions.append({
-                'goal_type': 'exam_score',
-                'current_value': current_score,
-                'target_value': target,
+                'goal_type': 'Exam Score',
+                'current_value': float(current_score),
+                'target_value': float(target),
                 'timeline_days': 90,
-                'description': description,
-                'priority': priority,
-                'expected_impact': 'High - Direct impact on grades'
+                'reason': reason,
+                'priority': priority
             })
         
         # Attendance goal
-        if 'Attendance' in student_data:
-            current_attendance = student_data['Attendance']
+        if 'Attendance' in df.columns:
+            current_attendance = student_row['Attendance']
             
             if current_attendance < 85:
                 target = 90
-                priority = 'high'
-                description = "Achieve 90% attendance (critical for success)"
+                priority = 'High'
+                reason = "Achieve 90% attendance - Critical for academic success"
             elif current_attendance < 95:
                 target = 95
-                priority = 'medium'
-                description = "Reach 95% attendance (excellent)"
+                priority = 'Medium'
+                reason = "Reach 95% attendance - Excellent performance level"
             else:
                 target = 98
-                priority = 'low'
-                description = "Maintain near-perfect attendance"
+                priority = 'Low'
+                reason = "Maintain near-perfect attendance"
             
             suggestions.append({
-                'goal_type': 'attendance',
-                'current_value': current_attendance,
-                'target_value': target,
+                'goal_type': 'Attendance',
+                'current_value': float(current_attendance),
+                'target_value': float(target),
                 'timeline_days': 60,
-                'description': description,
-                'priority': priority,
-                'expected_impact': 'High - Attendance strongly correlates with performance'
+                'reason': reason,
+                'priority': priority
             })
         
         # Study hours goal
-        if 'Hours_Studied' in student_data:
-            current_hours = student_data['Hours_Studied']
+        if 'Hours_Studied' in df.columns:
+            current_hours = student_row['Hours_Studied']
             
             if current_hours < 15:
                 target = 18
-                priority = 'high'
-                description = "Increase to recommended 15-20 hours/week"
+                priority = 'High'
+                reason = "Increase to recommended 15-20 hours/week for better results"
             elif current_hours < 20:
                 target = 20
-                priority = 'medium'
-                description = "Optimize study time to 20 hours/week"
+                priority = 'Medium'
+                reason = "Optimize study time to 20 hours/week for maximum effectiveness"
             else:
                 target = current_hours
-                priority = 'low'
-                description = "Maintain consistent study schedule"
+                priority = 'Low'
+                reason = "Maintain consistent study schedule"
             
             suggestions.append({
-                'goal_type': 'study_hours',
-                'current_value': current_hours,
-                'target_value': target,
+                'goal_type': 'Study Hours',
+                'current_value': float(current_hours),
+                'target_value': float(target),
                 'timeline_days': 30,
-                'description': description,
-                'priority': priority,
-                'expected_impact': 'Medium - Quality matters more than quantity'
+                'reason': reason,
+                'priority': priority
             })
         
         # Sort by priority
-        priority_order = {'high': 0, 'medium': 1, 'low': 2}
-        suggestions.sort(key=lambda x: priority_order[x['priority']])
+        priority_order = {'High': 0, 'Medium': 1, 'Low': 2}
+        suggestions.sort(key=lambda x: priority_order.get(x['priority'], 2))
+        
+        return suggestions
         
         return suggestions
     
