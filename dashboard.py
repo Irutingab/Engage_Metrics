@@ -44,7 +44,7 @@ class StudentDashboard:
                                 "💬 AI Assistant"])
         
         # Load data
-        df = self.data_manager.load_data()
+        df = self.data_manager.get_processed_data()
         if df is None or df.empty:
             st.error("Failed to load data. Please check your data file.")
             return
