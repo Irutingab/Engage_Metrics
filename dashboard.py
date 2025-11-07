@@ -87,8 +87,8 @@ class StudentDashboard:
         
         # Expanded metrics
         at_risk_df = self.analytics.predict_at_risk_students(df)
-        high_risk = len(at_risk_df[at_risk_df['risk_level'] == 'High']) if not at_risk_df.empty else 0
-        medium_risk = len(at_risk_df[at_risk_df['risk_level'] == 'Medium']) if not at_risk_df.empty else 0
+        high_risk = len(at_risk_df[at_risk_df['Risk_Level'] == 'High']) if not at_risk_df.empty else 0
+        medium_risk = len(at_risk_df[at_risk_df['Risk_Level'] == 'Medium']) if not at_risk_df.empty else 0
         
         col1, col2, col3, col4 = st.columns(4)
         with col1:
@@ -133,8 +133,8 @@ class StudentDashboard:
         with col2:
             st.subheader("At-Risk Student Analysis")
             at_risk = self.analytics.predict_at_risk_students(filtered_df)
-            high_risk = len(at_risk[at_risk['risk_level'] == 'High'])
-            medium_risk = len(at_risk[at_risk['risk_level'] == 'Medium'])
+            high_risk = len(at_risk[at_risk['Risk_Level'] == 'High']) if not at_risk.empty else 0
+            medium_risk = len(at_risk[at_risk['Risk_Level'] == 'Medium']) if not at_risk.empty else 0
             st.write(f"**High Risk:** {high_risk} students")
             st.write(f"**Medium Risk:** {medium_risk} students")
             if high_risk > 0:
